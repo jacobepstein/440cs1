@@ -30,12 +30,19 @@ births$MAGE[which(births$MAGE == 99)] = NA
 
 ### Birthweight
 
-###
+### Smoking
 
+### Parity
 
-###
+### Plurality
 
-### County
+### Gestation
+
+### Age of Mother
+
+### Race of Mother
+
+### County / Socioeconomic Status
 ```{r}
 #calculate infant mortality by county
 deaths_by_county = deaths %>%
@@ -54,4 +61,6 @@ infant_mortality = merge(deaths_by_county, births_by_county, by = "CORES") %>%
   select(-n_births, -n_deaths)
 
 birth = merge(births, infant_mortality, by = "CORES")
+
+
 ```
