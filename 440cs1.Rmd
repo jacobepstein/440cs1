@@ -60,7 +60,7 @@ ggplot(data = births, mapping = aes(x = PARITY, y = BWTG)) +
 ```
 
 ```{r}
-parity_reg = lm(BWTG ~ PARITY + mortality + GEST, births)
+parity_reg = lm(BWTG ~ PARITY + GEST, births)
 summary(parity_reg)
 ```
 We see that parity does have a significant impact on birth weight. Independent of other variables, the second child has the highest expected birth weight and then the expected birth weight slightly decreases for later children. Specifically, the sixth child has a lower expected birth weight than the first child. We chose to group parities of five or more as it provides more concise interpretation and prevents overfitting for parities that have very few data points. We see that the frequency of parity seems to decrease in an exponential fashion.
@@ -90,8 +90,14 @@ We see that the frequency of higher pluralities decrease rapidly. The results; h
 
 ```{r}
 # Check the plurality frequencies
-ggplot(data = births, mapping = aes(x = MAGE, y = BWTG)) + xlab("Age of Mother (years)") + ylab("Birth weight (g)") + 
-  ggtitle("NC Births, 2011-2016") + theme_minimal()
+ggplot(data = births, mapping = aes(x = MAGE, y = BWTG)) +
+  xlab("Age of Mother (years)") + 
+  ylab("Birth weight (g)") + 
+  geom_point() +
+  ggtitle("NC Births, 2011-2016") + 
+  theme_minimal()
+
+
 ggplot(births, aes(x = MAGE)) +
         stat_count()
 
@@ -119,7 +125,6 @@ infant_mortality = merge(deaths_by_county, births_by_county, by = "CORES") %>%
   select(-n_births, -n_deaths)
 
 births = merge(births, infant_mortality, by = "CORES")
-<<<<<<< HEAD
 
 summary(births$mortality)
 
@@ -136,8 +141,6 @@ ggplot(births, aes(x = mortality, y = BWTG))+
   geom_point() +
   geom_abline(slope = bwtg_vs_mortality$coefficients[[2]], intercept = bwtg_vs_mortality$coefficients[[1]])+
   theme_minimal()
-=======
->>>>>>> 3f925a4b42b83bf0043afc905a3cdf173d5edd7b
 
 
 ```
