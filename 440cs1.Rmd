@@ -45,7 +45,6 @@ Birthweight is close to normally distrubted, with a slight left skew, centered a
 
 ### Smoking
 ```{r}
-smoking_variables = c("CIGPN", "CIGFN", "CIGSN", "CIGLN")
 births = births %>% mutate(
   CIGPN_binary = CIGPN>0,
   CIGFN_binary = CIGFN>0,
@@ -145,7 +144,6 @@ We see a strong non linear negative relationship between plurality and birth wei
 ### Gestation
 
 ```{r}
-births$GEST = as.factor(births$GEST)
 ggplot(data = births, mapping = aes(x = GEST, y = BWTG)) +
   xlab("Gestation Period (weeks)") + 
   ylab("Birth weight (g)") + 
@@ -247,3 +245,61 @@ ggplot(births, aes(x = mortality, y = BWTG))+
 
 We chose to use infant mortality rate of birth county as a proxy for socioeconomic status, calculated as number of deaths before the age of 1 divided by total number of births in a county. The median county in the data had a infant mortality rate of 0.7%, with the range of infant mortality rates in our dataset ranging from 0.12% to 1.76%. Infant mortality rate of birth county and birth weight appear to have a weak negative linear relationship, and a 1 percentage point increase in infant mortality rate is associated with a 157g decrease in expected birth weight.
 
+
+## Build Model
+
+```{r}
+births_excl = na.omit(births)
+model1 = lm(data = births_excl, BWTG ~ GEST + PARITY_truncated + PLUR + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+summary(model1)
+plot(model1$fitted.values, model1$residuals)
+plot(births_excl$GEST, model1$residuals)
+plot(births_excl$PLUR, model1$residuals)
+plot(births_excl$PARITY_truncated, model1$residuals)
+plot(births_excl$smoking_type, model1$residuals)
+plot(births_excl$MRACER, model1$residuals)
+plot(births_excl$MAGE, model1$residuals)
+```
+
+
+```{r}
+births_excl = births_excl %>%
+  mutate(GEST2 = GEST^2, GEST3 = GEST ^ 3)
+model2 = lm(data = births_excl, BWTG ~ GEST + GEST2 + PARITY_truncated + PLUR + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+summary(model2)
+plot(model2$fitted.values, model2$residuals)
+plot(births_excl$GEST, model2$residuals)
+plot(births_excl$PLUR, model2$residuals)
+plot(births_excl$PARITY_truncated, model2$residuals)
+plot(births_excl$smoking_type, model2$residuals)
+plot(births_excl$MRACER, model2$residuals)
+plot(births_excl$MAGE, model2$residuals)
+```
+
+
+```{r}
+model3 = lm(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + PARITY_truncated + PLUR + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+summary(model3)
+plot(model3$fitted.values, model3$residuals)
+plot(births_excl$GEST, model3$residuals)
+plot(births_excl$PLUR, model3$residuals)
+plot(births_excl$PARITY_truncated, model3$residuals)
+plot(births_excl$smoking_type, model3$residuals)
+plot(births_excl$MRACER, model3$residuals)
+plot(births_excl$MAGE, model3$residuals)
+```
+
+
+```{r}
+births_excl = births_excl %>%
+  mutate(GEST4 = GEST^4)
+model4 = lm(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+summary(model4)
+plot(model4$fitted.values, model4$residuals)
+plot(births_excl$GEST, model4$residuals)
+plot(births_excl$PLUR, model4$residuals)
+plot(births_excl$PARITY_truncated, model4$residuals)
+plot(births_excl$smoking_type, model4$residuals)
+plot(births_excl$MRACER, model4$residuals)
+plot(births_excl$MAGE, model4$residuals)
+```
