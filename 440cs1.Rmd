@@ -2,7 +2,9 @@
 title: "440 Case Study I"
 author: "Jake Epstein, Daniel Spottiswood, Michael Tan, Sahil Patel, Man-Lin Hsiao"
 date: "9/3/2019"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ## Set Up, Load, Clean Data
@@ -31,8 +33,67 @@ births$MAGE[which(births$MAGE == 99)] = NA
 ## Exploratory Data Analysis
 
 ### Birthweight
+```{r}
+summary(births$BWTG)
+sd(births$BWTG, na.rm = TRUE)
+ggplot(births, aes(x= BWTG))+
+  geom_histogram() +
+  theme_minimal()
+```
+Birthweight is close to normally distrubted, with a slight left skew, centered around ~3300g with a standard deviation of 600g. There appear to be no large outliers in terms of birthweight. 430 birth weights are missing
 
 ### Smoking
+```{r}
+smoking_variables = c("CIGPN", "CIGFN", "CIGSN", "CIGLN")
+births = births %>% mutate(
+  CIGPN_binary = CIGPN>0,
+  CIGFN_binary = CIGFN>0,
+  CIGSN_binary = CIGSN>0,
+  CIGLN_binary = CIGLN>0
+)
+
+births = births %>%
+  mutate(total_smoked = CIGFN+CIGSN+CIGLN) %>%
+  mutate(smoked_during = total_smoked >0)
+
+mean(births$smoked_during,na.rm=TRUE)
+
+mean(births$CIGPN_binary, na.rm = TRUE)
+mean(births$CIGFN_binar, na.rm = TRUE)
+mean(births$CIGSN_binary,na.rm = TRUE)
+mean(births$CIGLN_binary, na.rm = TRUE)
+
+ggplot(births %>% filter(smoked_during), aes(x = total_smoked))+
+  geom_histogram(fill = "blue") +
+  theme_minimal()
+
+mean(births %>% filter(smoked_during) %>% select(total_smoked) %>% unlist())
+
+ggplot(births, aes(x= smoked_during, y = BWTG)) +
+  geom_boxplot()+
+  theme_minimal()
+
+lm_smoking_v_non = lm(data=births, BWTG~smoked_during)
+summary(lm_smoking_v_non)
+
+
+births = births %>%
+  mutate(smoking_type = ifelse(smoked_during, 
+      ifelse(CIGPN_binary, "before and during", "during only"),
+      ifelse(CIGPN_binary, "before only", "none"))) %>%
+  mutate(smoking_type = relevel(as.factor(smoking_type), ref = 4))
+
+
+ggplot(births, aes(x= smoking_type, y = BWTG)) +
+  geom_boxplot()+
+  theme_minimal()
+
+lm_smoking = lm(data=births, BWTG~smoking_type)
+summary(lm_smoking)
+
+```
+Around 13% of women smoked in the three months leading up to pregnancy and around 10% of women at any point during their pregnancy. Among those who did smoke during pregnance, the average number of cigarettes smoked during pregnancy was 23. The birthweight of children of smokers was significantly lower than that of the children of nonsmokers, with an average difference of 231 grams. There is also a significant relationship between birthweight and smoking before pregnancy, even for those who did not smoke during pregnancy.
+
 
 ### Parity
 
