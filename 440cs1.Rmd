@@ -27,6 +27,7 @@ births$PARITY[which(births$PARITY == 99)] = NA
 births$PLUR[which(births$PLUR == 99)] = NA
 births$GEST[which(births$GEST == 99)] = NA
 births$MAGE[which(births$MAGE == 99)] = NA
+
 ```
 
 
