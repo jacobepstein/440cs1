@@ -9,6 +9,7 @@ output: html_document
 ```{r}
 ## load packages
 library(dplyr)
+library(ggplot2)
 
 ## read in data
 births = read.csv("data/Yr1116Birth.csv", na.strings = "9999")
@@ -44,23 +45,40 @@ births$MAGE[which(births$MAGE == 99)] = NA
 
 ### County / Socioeconomic Status
 ```{r}
-#calculate infant mortality by county
+#calculate infant mortality by county, to use as a proxy for socioconomic status
 deaths_by_county = deaths %>%
-  # filter(!is.na(cores)) %>%
   group_by(cores) %>%
   summarize(n_deaths = n()) %>%
   rename(CORES=cores)
 
 births_by_county = births %>%
-  # filter(!is.na(CORES)) %>%
   group_by(CORES) %>%
   summarize(n_births = n())
 
 infant_mortality = merge(deaths_by_county, births_by_county, by = "CORES") %>%
-  mutate(mortality = n_deaths/n_births) %>%
+  mutate(mortality = n_deaths/n_births*100) %>% #note: mortality rate is as percentage
   select(-n_births, -n_deaths)
 
-birth = merge(births, infant_mortality, by = "CORES")
+births = merge(births, infant_mortality, by = "CORES")
+
+summary(births$mortality)
+
+ggplot(births, aes(x= mortality))+
+  geom_histogram(fill="blue") +
+  xlab("Mortality Rate (%)")+
+  theme_minimal() +
+  ggtitle("Histogram of Infant Mortality Rate by County")
+
+bwtg_vs_mortality = lm(data = births, BWTG~mortality)
+summary(bwtg_vs_mortality)
+
+ggplot(births, aes(x = mortality, y = BWTG))+
+  geom_point() +
+  geom_abline(slope = bwtg_vs_mortality$coefficients[[2]], intercept = bwtg_vs_mortality$coefficients[[1]])+
+  theme_minimal()
 
 
 ```
+
+We chose to use infant mortality rate of birth county as a proxy for socioeconomic status, calculated as number of deaths before the age of 1 divided by total number of births in a county. The median county in the data had a infant mortality rate of 0.7%, with the range of infant mortality rates in our dataset ranging from 0.12% to 1.76%. Infant mortality rate of birth county and birth weight appear to have a weak negative linear relationship, and a 1 percentage point increase in infant mortality rate is associated with a 157g decrease in expected birth weight.
+
