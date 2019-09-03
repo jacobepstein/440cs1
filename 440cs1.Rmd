@@ -63,7 +63,7 @@ ggplot(data = births, mapping = aes(x = PARITY, y = BWTG)) +
 parity_reg = lm(BWTG ~ PARITY + GEST, births)
 summary(parity_reg)
 ```
-We see that parity does have a significant impact on birth weight. Independent of other variables, the second child has the highest expected birth weight and then the expected birth weight slightly decreases for later children. Specifically, the sixth child has a lower expected birth weight than the first child. We chose to group parities of five or more as it provides more concise interpretation and prevents overfitting for parities that have very few data points. We see that the frequency of parity seems to decrease in an exponential fashion.
+We see that parity does have a significant impact on birth weight. Independent of other variables, the second child has the highest median birth weight and then the median birth weight slightly decreases for later children. Specifically, the sixth child has a lower median birth weight than the first child. We chose to group parities of five or more as it provides more concise interpretation and prevents overfitting for parities that have very few data points. We see that the frequency of parity seems to decrease in an exponential fashion.
 
 We need to decide if we want this to be a categorical variable?? If not I will redo and probably try to fit a quadratic.
 
@@ -86,13 +86,31 @@ We see that the frequency of higher pluralities decrease rapidly. The results; h
 
 ### Gestation
 
+```{r}
+births$GEST = as.factor(births$GEST)
+ggplot(data = births, mapping = aes(x = GEST, y = BWTG)) +
+  xlab("Gestation Period (weeks)") + 
+  ylab("Birth weight (g)") + 
+  geom_boxplot() +
+  ggtitle("NC Births, 2011-2016") + 
+  theme_minimal()
+
+
+ggplot(births, aes(x = GEST)) +
+        stat_count()
+
+gest_reg = lm(BWTG ~ GEST, births)
+summary(gest_reg)
+```
+The relationship appears to be cubic. We see th most common gestational period is 39 weeks and the period with the highest media expected weight is 42 weeks.
+
 ### Age of Mother
 
 ```{r}
-# Check the plurality frequencies
 ggplot(data = births, mapping = aes(x = MAGE, y = BWTG)) +
   xlab("Age of Mother (years)") + 
   ylab("Birth weight (g)") + 
+  geom_smooth(method='lm',formula=data$BWTG~data$MAGE) + 
   geom_point() +
   ggtitle("NC Births, 2011-2016") + 
   theme_minimal()
@@ -107,6 +125,23 @@ summary(mage_reg)
 Mother's age seems to be fairly normally distributed with a mean in the late twenties.
 
 ### Race of Mother
+
+```{r}
+births$MRACER = as.factor(births$MRACER)
+ggplot(data = births, mapping = aes(x = MRACER, y = BWTG)) +
+  xlab("Race of Mother") + 
+  ylab("Birth weight (g)") + 
+  geom_boxplot() +
+  ggtitle("NC Births, 2011-2016") + 
+  theme_minimal()
+
+
+ggplot(births, aes(x = MRACER)) +
+        stat_count()
+
+mage_reg = lm(BWTG ~ MRACER, births)
+summary(mage_reg)
+```
 
 ### County / Socioeconomic Status
 ```{r}
