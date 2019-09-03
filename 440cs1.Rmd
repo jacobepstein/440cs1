@@ -5,8 +5,39 @@ date: "9/3/2019"
 output: html_document
 ---
 
-### Load Data
+### Set Up, Load Data
 ```{r}
+## load packages
+library(dplyr)
+
+## read in data
 births = read.csv("data/Yr1116Birth.csv", na.strings = c("9","99","9999"))
 deaths = read.csv("data/Yr1116Death.csv", na.strings = c("9","99","9999"))
+
+## add back in county 99
+births$CORES[which(is.na(births$CORES))] = 99
+deaths$cores[which(is.na(deaths$cores))] = 99
+
+```
+
+
+```{r}
+#calculate infant mortality by county
+
+deaths_by_county = deaths %>%
+  # filter(!is.na(cores)) %>%
+  group_by(cores) %>%
+  summarize(n_deaths = n()) %>%
+  rename(CORES=cores)
+
+births_by_county = births %>%
+  # filter(!is.na(CORES)) %>%
+  group_by(CORES) %>%
+  summarize(n_births = n())
+
+infant_mortality = merge(deaths_by_county, births_by_county, by = "CORES") %>%
+  mutate(mortality = n_deaths/n_births) %>%
+  select(-n_births, -n_deaths)
+
+birth1 = merge(births, infant_mortality, by = "CORES")
 ```
