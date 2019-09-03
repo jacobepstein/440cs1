@@ -14,7 +14,7 @@ library(ggplot2)
 ## read in data
 births = read.csv("data/Yr1116Birth.csv", na.strings = "9999")
 deaths = read.csv("data/Yr1116Death.csv")
-
+ 
 ## rewrite NAs
 births$SEX[which(births$SEX == 9)] = NA
 births$CIGPN[which(births$CIGPN == 99)] = NA
@@ -22,6 +22,7 @@ births$CIGFN[which(births$CIGFN == 99)] = NA
 births$CIGSN[which(births$CIGSN == 99)] = NA
 births$CIGLN[which(births$CIGLN == 99)] = NA
 births$PARITY[which(births$PARITY == 99)] = NA
+births$PLUR[which(births$PLUR == 99)] = NA
 births$GEST[which(births$GEST == 99)] = NA
 births$MAGE[which(births$MAGE == 99)] = NA
 ```
@@ -35,11 +36,69 @@ births$MAGE[which(births$MAGE == 99)] = NA
 
 ### Parity
 
+```{r}
+# Check the parity frequencies
+births$PARITY = as.factor(births$PARITY)
+ggplot(data = births, mapping = aes(x = PARITY, y = BWTG)) +
+  geom_boxplot() + xlab("Parity") + ylab("Birth weight (g)") + 
+  ggtitle("NC Births, 2011-2016") + theme_minimal()
+ggplot(births, aes(x = PARITY)) +
+        stat_count()
+
+# Model without any change, significant up to the low teens
+parity_reg = lm(BWTG ~ PARITY, births)
+summary(parity_reg)
+
+# Create variable 5+ and rerun diagnostics
+births$PARITY = factor(births$PARITY, levels=c(levels(births$PARITY), "5+"))
+births$PARITY[which(as.integer(births$PARITY) >= 5)] = "5+"
+ggplot(births, aes(x = PARITY)) +
+        stat_count()
+ggplot(data = births, mapping = aes(x = PARITY, y = BWTG)) +
+  geom_boxplot() + xlab("Parity") + ylab("Birth weight (g)") + 
+  ggtitle("NC Births, 2011-2016")
+```
+
+```{r}
+parity_reg = lm(BWTG ~ PARITY + mortality + GEST, births)
+summary(parity_reg)
+```
+We see that parity does have a significant impact on birth weight. Independent of other variables, the second child has the highest expected birth weight and then the expected birth weight slightly decreases for later children. Specifically, the sixth child has a lower expected birth weight than the first child. We chose to group parities of five or more as it provides more concise interpretation and prevents overfitting for parities that have very few data points. We see that the frequency of parity seems to decrease in an exponential fashion.
+
+We need to decide if we want this to be a categorical variable?? If not I will redo and probably try to fit a quadratic.
+
 ### Plurality
+
+```{r}
+# Check the plurality frequencies
+births$PLUR = as.factor(births$PLUR)
+ggplot(data = births, mapping = aes(x = PLUR, y = BWTG)) +
+  geom_boxplot() + xlab("Plurality") + ylab("Birth weight (g)") + 
+  ggtitle("NC Births, 2011-2016") + theme_minimal()
+ggplot(births, aes(x = PLUR)) +
+        stat_count()
+
+plurality_reg = lm(BWTG ~ PLUR, births)
+summary(plurality_reg)
+```
+
+We see that the frequency of higher pluralities decrease rapidly. The results; however, are still statistically significant and we see that higher plurality is linked with lower birth weights.
 
 ### Gestation
 
 ### Age of Mother
+
+```{r}
+# Check the plurality frequencies
+ggplot(data = births, mapping = aes(x = MAGE, y = BWTG)) + xlab("Age of Mother (years)") + ylab("Birth weight (g)") + 
+  ggtitle("NC Births, 2011-2016") + theme_minimal()
+ggplot(births, aes(x = MAGE)) +
+        stat_count()
+
+mage_reg = lm(BWTG ~ MAGE, births)
+summary(mage_reg)
+```
+Mother's age seems to be fairly normally distributed with a mean in the late twenties.
 
 ### Race of Mother
 
@@ -60,6 +119,7 @@ infant_mortality = merge(deaths_by_county, births_by_county, by = "CORES") %>%
   select(-n_births, -n_deaths)
 
 births = merge(births, infant_mortality, by = "CORES")
+<<<<<<< HEAD
 
 summary(births$mortality)
 
@@ -76,6 +136,8 @@ ggplot(births, aes(x = mortality, y = BWTG))+
   geom_point() +
   geom_abline(slope = bwtg_vs_mortality$coefficients[[2]], intercept = bwtg_vs_mortality$coefficients[[1]])+
   theme_minimal()
+=======
+>>>>>>> 3f925a4b42b83bf0043afc905a3cdf173d5edd7b
 
 
 ```
