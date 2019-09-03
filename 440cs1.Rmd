@@ -39,6 +39,7 @@ births$MAGE[which(births$MAGE == 99)] = NA
 ```{r}
 # Check the parity frequencies
 births$PARITY = as.factor(births$PARITY)
+par(mfrow=c(2,1))
 ggplot(data = births, mapping = aes(x = PARITY, y = BWTG)) +
   geom_boxplot() + xlab("Parity") + ylab("Birth weight (g)") + 
   ggtitle("NC Births, 2011-2016") + theme_minimal()
@@ -49,23 +50,18 @@ ggplot(births, aes(x = PARITY)) +
 parity_reg = lm(BWTG ~ PARITY, births)
 summary(parity_reg)
 
-# Create variable 5+ and rerun diagnostics
-births$PARITY = factor(births$PARITY, levels=c(levels(births$PARITY), "5+"))
-births$PARITY[which(as.integer(births$PARITY) >= 5)] = "5+"
-ggplot(births, aes(x = PARITY)) +
+# Create variable 5+ and rerun EDA
+births$PARITY_truncated = factor(births$PARITY, levels=c(levels(births$PARITY), "5+"))
+births$PARITY_truncated[which(as.integer(births$PARITY_truncated) >= 5)] = "5+"
+ggplot(births, aes(x = PARITY_truncated)) +
         stat_count()
-ggplot(data = births, mapping = aes(x = PARITY, y = BWTG)) +
-  geom_boxplot() + xlab("Parity") + ylab("Birth weight (g)") + 
+ggplot(data = births, mapping = aes(x = PARITY_truncated, y = BWTG)) +
+  geom_boxplot() + xlab("Parity Truncated") + ylab("Birth weight (g)") + 
   ggtitle("NC Births, 2011-2016")
+parity_truncated_reg = lm(BWTG ~ PARITY, births)
+summary(parity_truncated_reg)
 ```
-
-```{r}
-parity_reg = lm(BWTG ~ PARITY + GEST, births)
-summary(parity_reg)
-```
-We see that parity does have a significant impact on birth weight. Independent of other variables, the second child has the highest median birth weight and then the median birth weight slightly decreases for later children. Specifically, the sixth child has a lower median birth weight than the first child. We chose to group parities of five or more as it provides more concise interpretation and prevents overfitting for parities that have very few data points. We see that the frequency of parity seems to decrease in an exponential fashion.
-
-We need to decide if we want this to be a categorical variable?? If not I will redo and probably try to fit a quadratic.
+Independent of other variables, we see a negative relationship between parity and birth weight past the first child. The frequency of parity decreases in an exponential fashion. A second variable was created that truncates parities of at least five to improve interprability and prevent overfitting. The quantity of missing data is relatively small.
 
 ### Plurality
 
@@ -82,7 +78,7 @@ plurality_reg = lm(BWTG ~ PLUR, births)
 summary(plurality_reg)
 ```
 
-We see that the frequency of higher pluralities decrease rapidly. The results; however, are still statistically significant and we see that higher plurality is linked with lower birth weights.
+We see a strong non linear negative relationship between plurality and birth weight. The frequency of pluralities above two is extremely small, and we again see a proportionally small amount of missing data.
 
 ### Gestation
 
@@ -102,7 +98,7 @@ ggplot(births, aes(x = GEST)) +
 gest_reg = lm(BWTG ~ GEST, births)
 summary(gest_reg)
 ```
-The relationship appears to be cubic. We see th most common gestational period is 39 weeks and the period with the highest media expected weight is 42 weeks.
+There appears to be a non linear positive relationship between gestation period and birth weight. The mean gestational period is approximately 38.5 weeks and the period with the highest median weight is 42 weeks. The frequency distribution is left skewed with the majority of babies having a gestational period between 38 and 40 weeks. There is some concern that more extreme gestational periods may lead to higher variance, and it should be noted that there is a chunk of data points with gestational periods of 17 to 21 weeks that have much higher than expected birth weights.
 
 ### Age of Mother
 
@@ -110,7 +106,7 @@ The relationship appears to be cubic. We see th most common gestational period i
 ggplot(data = births, mapping = aes(x = MAGE, y = BWTG)) +
   xlab("Age of Mother (years)") + 
   ylab("Birth weight (g)") + 
-  geom_smooth(method='lm',formula=data$BWTG~data$MAGE) + 
+  geom_smooth(method='lm', na.rm = TRUE) + 
   geom_point() +
   ggtitle("NC Births, 2011-2016") + 
   theme_minimal()
@@ -122,7 +118,7 @@ ggplot(births, aes(x = MAGE)) +
 mage_reg = lm(BWTG ~ MAGE, births)
 summary(mage_reg)
 ```
-Mother's age seems to be fairly normally distributed with a mean in the late twenties.
+Mother's age seems to be fairly normally distributed with a mean of 27.8. There appears to be a positive relationship between the age of the mother and the birth weight. There is no evidence to suggest that the birth weight variance is not constant across the mother's age.
 
 ### Race of Mother
 
@@ -135,6 +131,10 @@ ggplot(data = births, mapping = aes(x = MRACER, y = BWTG)) +
   ggtitle("NC Births, 2011-2016") + 
   theme_minimal()
 
+bw_race_avgs = births %>%
+  group_by(MRACER) %>%
+  summarize(mweight = mean(BWTG, na.rm = TRUE), freq_percent = n()/nrow(births))
+bw_race_avgs
 
 ggplot(births, aes(x = MRACER)) +
         stat_count()
@@ -142,6 +142,9 @@ ggplot(births, aes(x = MRACER)) +
 mage_reg = lm(BWTG ~ MRACER, births)
 summary(mage_reg)
 ```
+0 - non-white,, 1 = white, 2 black, 3 indian, 8 other asian
+
+There are significant differences between the average birth weights of mother's of different races. We see that mother's that self identified as white have the largest mean baby weight at 3.33 kg, while black mother's have the lowest mean baby weight at only 3.07 kg. 58 percent of mother's identify as white, 24 percent identify as black, 12 percent identify as non-white, and 3 percent identify as other asian.
 
 ### County / Socioeconomic Status
 ```{r}
