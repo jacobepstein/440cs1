@@ -99,8 +99,13 @@ Around 13% of women smoked in the three months leading up to pregnancy and aroun
 
 ```{r}
 # Check the parity frequencies
+births$PARITY = as.numeric(births$PARITY)
+births = births %>% 
+  mutate(PARITY_truncated = ifelse(
+    PARITY > 4, "5+", PARITY)
+  )
+  
 births$PARITY = as.factor(births$PARITY)
-par(mfrow=c(2,1))
 ggplot(data = births, mapping = aes(x = PARITY, y = BWTG)) +
   geom_boxplot() + xlab("Parity") + ylab("Birth weight (g)") + 
   ggtitle("NC Births, 2011-2016") + theme_minimal()
@@ -111,15 +116,14 @@ ggplot(births, aes(x = PARITY)) +
 parity_reg = lm(BWTG ~ PARITY, births)
 summary(parity_reg)
 
-# Create variable 5+ and rerun EDA
-births$PARITY_truncated = factor(births$PARITY, levels=c(levels(births$PARITY), "5+"))
-births$PARITY_truncated[which(as.integer(births$PARITY_truncated) >= 5)] = "5+"
+# Rerun EDA with truncated data
+births$PARITY_truncated = as.factor(births$PARITY_truncated)
 ggplot(births, aes(x = PARITY_truncated)) +
         stat_count()
 ggplot(data = births, mapping = aes(x = PARITY_truncated, y = BWTG)) +
   geom_boxplot() + xlab("Parity Truncated") + ylab("Birth weight (g)") + 
   ggtitle("NC Births, 2011-2016")
-parity_truncated_reg = lm(BWTG ~ PARITY, births)
+parity_truncated_reg = lm(BWTG ~ PARITY_truncated, births)
 summary(parity_truncated_reg)
 ```
 Independent of other variables, we see a negative relationship between parity and birth weight past the first child. The frequency of parity decreases in an exponential fashion. A second variable was created that truncates parities of at least five to improve interprability and prevent overfitting. The quantity of missing data is relatively small.
@@ -128,6 +132,11 @@ Independent of other variables, we see a negative relationship between parity an
 
 ```{r}
 # Check the plurality frequencies
+births$PLUR = as.numeric(births$PLUR)
+births = births %>% 
+  mutate(PLUR_truncated = ifelse(
+    PLUR > 2, "3+", PLUR)
+  )
 births$PLUR = as.factor(births$PLUR)
 ggplot(data = births, mapping = aes(x = PLUR, y = BWTG)) +
   geom_boxplot() + xlab("Plurality") + ylab("Birth weight (g)") + 
@@ -137,6 +146,16 @@ ggplot(births, aes(x = PLUR)) +
 
 plurality_reg = lm(BWTG ~ PLUR, births)
 summary(plurality_reg)
+
+births$PLUR_truncated = as.factor(births$PLUR_truncated)
+ggplot(data = births, mapping = aes(x = PLUR_truncated, y = BWTG)) +
+  geom_boxplot() + xlab("Plurality Truncated") + ylab("Birth weight (g)") + 
+  ggtitle("NC Births, 2011-2016") + theme_minimal()
+ggplot(births, aes(x = PLUR_truncated)) +
+        stat_count()
+
+plurality_reg_truncated = lm(BWTG ~ PLUR_truncated, births)
+summary(plurality_reg_truncated)
 ```
 
 We see a strong non linear negative relationship between plurality and birth weight. The frequency of pluralities above two is extremely small, and we again see a proportionally small amount of missing data.
