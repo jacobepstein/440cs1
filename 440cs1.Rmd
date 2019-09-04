@@ -3,8 +3,8 @@ title: "440 Case Study I"
 author: "Jake Epstein, Daniel Spottiswood, Michael Tan, Sahil Patel, Man-Lin Hsiao"
 date: "9/3/2019"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ## Set Up, Load, Clean Data
@@ -64,7 +64,7 @@ mean(births$CIGSN_binary,na.rm = TRUE)
 mean(births$CIGLN_binary, na.rm = TRUE)
 
 ggplot(births %>% filter(smoked_during), aes(x = total_smoked))+
-  geom_histogram(fill = "blue") +
+  geom_histogram() +
   theme_minimal()
 
 mean(births %>% filter(smoked_during) %>% select(total_smoked) %>% unlist())
@@ -99,6 +99,7 @@ Around 13% of women smoked in the three months leading up to pregnancy and aroun
 
 ```{r}
 # Check the parity frequencies
+summary(births$PARITY)
 births$PARITY = as.numeric(births$PARITY)
 births = births %>% 
   mutate(PARITY_truncated = ifelse(
@@ -158,12 +159,14 @@ plurality_reg_truncated = lm(BWTG ~ PLUR_truncated, births)
 summary(plurality_reg_truncated)
 ```
 
-We see a strong non linear negative relationship between plurality and birth weight. The frequency of pluralities above two is extremely small, and we again see a proportionally small amount of missing data.
+We see a strong non linear negative relationship between plurality and birth weight. The frequency of pluralities above two is extremely small, and we again see a proportionally small amount of missing data. A second variable was created that truncates pluralities of at least three to improve interprability and prevent overfitting
 
 ### Gestation
 
 ```{r}
-ggplot(data = births, mapping = aes(x = GEST, y = BWTG)) +
+summary(births$GEST)
+
+ggplot(data = births, mapping = aes(x = as.factor(GEST), y = BWTG)) +
   xlab("Gestation Period (weeks)") + 
   ylab("Birth weight (g)") + 
   geom_boxplot() +
@@ -176,8 +179,11 @@ ggplot(births, aes(x = GEST)) +
 
 gest_reg = lm(BWTG ~ GEST, births)
 summary(gest_reg)
+
+max_gest = max(births$GEST, na.rm=TRUE)
+births = births[which(births$GEST != max_gest), ]
 ```
-There appears to be a non linear positive relationship between gestation period and birth weight. The mean gestational period is approximately 38.5 weeks and the period with the highest median weight is 42 weeks. The frequency distribution is left skewed with the majority of babies having a gestational period between 38 and 40 weeks. There is some concern that more extreme gestational periods may lead to higher variance, and it should be noted that there is a chunk of data points with gestational periods of 17 to 21 weeks that have much higher than expected birth weights.
+There appears to be a non linear positive relationship between gestation period and birth weight. The mean gestational period is approximately 38.5 weeks and the period with the highest median weight is 42 weeks. The frequency distribution is left skewed with the majority of babies having a gestational period between 38 and 40 weeks. There is some concern that more extreme gestational periods may lead to higher variance, and it should be noted that there is a chunk of data points with gestational periods of 17 to 21 weeks that have much higher than expected birth weights. There is one outlier at gestation period of 83. We will assume that this data point was recorded incorrectly and will drop the observation from the dataset.
 
 ### Age of Mother
 
@@ -192,7 +198,8 @@ ggplot(data = births, mapping = aes(x = MAGE, y = BWTG)) +
 
 
 ggplot(births, aes(x = MAGE)) +
-        stat_count()
+  stat_count() +
+  theme_minimal()
 
 mage_reg = lm(BWTG ~ MAGE, births)
 summary(mage_reg)
@@ -246,7 +253,7 @@ births = merge(births, infant_mortality, by = "CORES")
 summary(births$mortality)
 
 ggplot(births, aes(x= mortality))+
-  geom_histogram(fill="blue") +
+  geom_histogram() +
   xlab("Mortality Rate (%)")+
   theme_minimal() +
   ggtitle("Histogram of Infant Mortality Rate by County")
@@ -312,11 +319,11 @@ plot(births_excl$MAGE, model3$residuals)
 ```{r}
 births_excl = births_excl %>%
   mutate(GEST4 = GEST^4)
-model4 = lm(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+model4 = lm(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
 summary(model4)
 plot(model4$fitted.values, model4$residuals)
 plot(births_excl$GEST, model4$residuals)
-plot(births_excl$PLUR, model4$residuals)
+plot(births_excl$PLUR_truncated, model4$residuals)
 plot(births_excl$PARITY_truncated, model4$residuals)
 plot(births_excl$smoking_type, model4$residuals)
 plot(births_excl$MRACER, model4$residuals)
