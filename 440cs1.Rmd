@@ -39,10 +39,11 @@ births$MAGE[which(births$MAGE == 99)] = NA
 summary(births$BWTG)
 sd(births$BWTG, na.rm = TRUE)
 ggplot(births, aes(x= BWTG))+
-  geom_histogram() +
-  theme_minimal()
+  geom_histogram(binwidth=100, colour="black", 
+                          aes(y=..density.., fill=..count..), position = "stack") + 
+  stat_function(fun = dnorm, color = "red", args = list(mean = mean(births$BWTG, na.rm = TRUE), sd = sd(births$BWTG, na.rm = TRUE)))
 ```
-Birthweight is close to normally distrubted, with a slight left skew, centered around ~3300g with a standard deviation of 600g. There appear to be no large outliers in terms of birthweight. 430 birth weights are missing
+Birthweight is close to normally distrubted, with a slight left skew, centered around ~3300g with a standard deviation of 600g. There appear to be no large outliers in terms of birthweight. 430 birth weights are missing. We see that the left tail is much larger than we would expect in a normal distribution
 
 ### Smoking
 ```{r}
@@ -195,12 +196,14 @@ ggplot(data = births, mapping = aes(x = MAGE, y = BWTG)) +
 
 
 ggplot(births, aes(x = MAGE)) +
-        stat_count()
+  geom_histogram(binwidth=1, colour="black", 
+                          aes(y=..density.., fill=..count..), position = "stack") + 
+  stat_function(fun = dnorm, color = "red", args = list(mean = mean(births$MAGE, na.rm = TRUE), sd = sd(births$MAGE, na.rm = TRUE)))
 
 mage_reg = lm(BWTG ~ MAGE, births)
 summary(mage_reg)
 ```
-Mother's age seems to be fairly normally distributed with a mean of 27.8. There does appear to be a bit of a long right tail, as most mothers are between the ages of 17 and 30 but there are also mothers who are as old as 50. There appears to be a positive relationship between the age of the mother and the birth weight. There is no evidence to suggest that the birth weight variance is not constant across the mother's age.
+Mother's age seems to be fairly normally distributed with a mean of 27.8. There appears to be a positive relationship between the age of the mother and the birth weight. There is no evidence to suggest that the birth weight variance is not constant across the mother's age.
 
 ### Race of Mother
 
