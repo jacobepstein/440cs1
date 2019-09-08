@@ -10,14 +10,20 @@ output:
   html_document: default
 ---
 
-## Set Up, Load, Clean Data
-```{r}
+## Set Up
+
+### Load Necessary Packages
+```{r, message=FALSE}
 ## load packages
 library(dplyr)
 library(ggplot2)
 library(MASS)
 library(gridExtra)
+knitr::opts_chunk$set(warning=FALSE)
+```
 
+### Load and Clean Data
+```{r}
 ## read in data
 births = read.csv("data/Yr1116Birth.csv", na.strings = "9999")
 deaths = read.csv("data/Yr1116Death.csv")
@@ -32,15 +38,20 @@ births$PARITY[which(births$PARITY == 99)] = NA
 births$PLUR[which(births$PLUR == 99)] = NA
 births$GEST[which(births$GEST == 99)] = NA
 births$MAGE[which(births$MAGE == 99)] = NA
-
 select = dplyr::select
+```
+
+
+```{r}
+births = sample_n(births, 10000)
+deaths = sample_n(deaths, 1000)
 ```
 
 
 ## Exploratory Data Analysis
 
 ### Birthweight
-```{r}
+```{r, echo=FALSE, message=FALSE}
 summary(births$BWTG)
 sd(births$BWTG, na.rm = TRUE)
 ggplot(births, aes(x= BWTG))+
@@ -49,10 +60,12 @@ ggplot(births, aes(x= BWTG))+
   stat_function(fun = dnorm, color = "red", args = list(mean = mean(births$BWTG, na.rm = TRUE), sd = sd(births$BWTG, na.rm = TRUE))) +
   theme_minimal()
 ```
+</br>
+</br>
 Birthweight is close to normally distrubted, with a slight left skew, centered around ~3300g with a standard deviation of 600g. There appear to be no large outliers in terms of birthweight. 430 birth weights are missing. We see that the left tail is much larger than we would expect in a normal distribution
 
 ### Smoking
-```{r}
+```{r, echo=FALSE, message=FALSE, fig.width=5, fig.height=2.5}
 births = births %>% mutate(
   CIGPN_binary = CIGPN>0,
   CIGFN_binary = CIGFN>0,
@@ -100,12 +113,14 @@ lm_smoking = lm(data=births, BWTG~smoking_type)
 summary(lm_smoking)
 
 ```
+</br>
+</br>
 Around 13% of women smoked in the three months leading up to pregnancy and around 10% of women at any point during their pregnancy. Among those who did smoke during pregnance, the average number of cigarettes smoked during pregnancy was 23. The birthweight of children of smokers was significantly lower than that of the children of nonsmokers, with an average difference of 231 grams. There is also a significant relationship between birthweight and smoking before pregnancy, even for those who did not smoke during pregnancy.
 
 
 ### Parity
 
-```{r}
+```{r, echo=FALSE, message=FALSE, fig.width=5, fig.height=2.5}
 # Check the parity frequencies
 summary(births$PARITY)
 births$PARITY = as.numeric(births$PARITY)
@@ -140,11 +155,13 @@ ggplot(data = births, mapping = aes(x = PARITY_truncated, y = BWTG)) +
 parity_truncated_reg = lm(BWTG ~ PARITY_truncated, births)
 summary(parity_truncated_reg)
 ```
+</br>
+</br>
 Independent of other variables, we see a negative relationship between parity and birth weight past the first child. The frequency of parity decreases in an exponential fashion. A second variable was created that truncates parities of at least five to improve interprability and prevent overfitting. The quantity of missing data is relatively small.
 
 ### Plurality
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 # Check the plurality frequencies
 births$PLUR = as.numeric(births$PLUR)
 
@@ -183,12 +200,12 @@ ggplot(births, aes(x = PLUR_truncated)) +
 plurality_reg_truncated = lm(BWTG ~ PLUR_truncated, births)
 summary(plurality_reg_truncated)
 ```
-
+</br>
 We see a strong non linear negative relationship between plurality and birth weight. The frequency of pluralities above two is extremely small, and we again see a proportionally small amount of missing data. A second variable was created that truncates pluralities of at least three to improve interprability and prevent overfitting
 
 ### Gestation
 
-```{r}
+```{r, echo=FALSE, message=FALSE, fig.width=5, fig.height=2.5}
 
 ggplot(data = births, mapping = aes(x = as.factor(GEST), y = BWTG)) +
   xlab("Gestation Period (weeks)") + 
@@ -205,11 +222,14 @@ ggplot(births, aes(x = GEST)) +
 gest_reg = lm(BWTG ~ GEST, births)
 summary(gest_reg)
 ```
+</br>
+</br>
 There appears to be a non linear positive relationship between gestation period and birth weight. The mean gestational period is approximately 38.5 weeks and the period with the highest median weight is 42 weeks. The frequency distribution is left skewed with the majority of babies having a gestational period between 38 and 40 weeks. There is some concern that more extreme gestational periods may lead to higher variance, and it should be noted that there is a chunk of data points with gestational periods of 17 to 21 weeks that have much higher than expected birth weights. There is an extreme outlier with gestational age of 83 weeks. Given that this data point was probably incorrectly recorded, we will exclude it from our analysis when building the model.
 
 ### Age of Mother
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
+
 ggplot(data = births, mapping = aes(x = MAGE, y = BWTG)) +
   xlab("Age of Mother (years)") + 
   ylab("Birth weight (g)") + 
@@ -228,11 +248,14 @@ ggplot(births, aes(x = MAGE)) +
 mage_reg = lm(BWTG ~ MAGE, births)
 summary(mage_reg)
 ```
+</br>
+</br>
 Mother's age seems to be fairly normally distributed with a mean of 27.8. There appears to be a positive relationship between the age of the mother and the birth weight. There is no evidence to suggest that the birth weight variance is not constant across the mother's age.
 
 ### Race of Mother
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
+
 births$MRACER = as.factor(births$MRACER)
 ggplot(data = births, mapping = aes(x = MRACER, y = BWTG)) +
   xlab("Race of Mother") + 
@@ -253,12 +276,15 @@ ggplot(births, aes(x = MRACER)) +
 mage_reg = lm(BWTG ~ MRACER, births)
 summary(mage_reg)
 ```
+</br>
+</br>
 0 - non-white,, 1 = white, 2 black, 3 indian, 8 other asian
 
 There are significant differences between the average birth weights of mother's of different races. We see that mother's that self identified as white have the largest mean baby weight at 3.33 kg, while black mother's have the lowest mean baby weight at only 3.07 kg. 58 percent of mother's identify as white, 24 percent identify as black, 12 percent identify as non-white, and 3 percent identify as other asian.
 
 ### County / Socioeconomic Status
-```{r}
+```{r, echo=FALSE, message=FALSE}
+
 #calculate infant mortality by county, to use as a proxy for socioconomic status
 deaths_by_county = deaths %>%
   group_by(cores) %>%
@@ -293,19 +319,19 @@ ggplot(births, aes(x = mortality, y = BWTG))+
 
 
 ```
-
+</br>
+</br>
 We chose to use infant mortality rate of birth county as a proxy for socioeconomic status, calculated as number of deaths before the age of 1 divided by total number of births in a county. The median county in the data had a infant mortality rate of 0.7%, with the range of infant mortality rates in our dataset ranging from 0.12% to 1.76%. Infant mortality rate of birth county and birth weight appear to have a weak negative linear relationship, and in isolation, a 1 percentage point increase in infant mortality rate is associated with a 157g decrease in expected birth weight.
-
-
 ## Build Model
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 births_excl = na.omit(births)
 births_excl = births_excl[which(births_excl$GEST < 80), ]
 births_excl = births_excl %>%
   mutate(GEST2 = GEST^2, GEST3 = GEST ^ 3, GEST4 = GEST^4)
 model1 = lm(data = births_excl, BWTG ~ GEST + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
 summary(model1)
+par(mfrow = c(2,2))
 plot(model1)
 # plot(model1$fitted.values, model1$residuals)
 plot(births_excl$GEST, model1$residuals)
@@ -315,6 +341,8 @@ plot(births_excl$smoking_type, model1$residuals)
 plot(births_excl$MRACER, model1$residuals)
 plot(births_excl$MAGE, model1$residuals)
 ```
+</br>
+</br>
 The residuals vs fitted values and residuals vs gestational period plot slope downwards, indicating that there is a departure from linearity. More precisely, the linear model underpredicts when gestational period is below ~30 and overpredicts when gestational period is above ~30. A transformation may be helpful. The model may improve if a square term is added. There is a particularly high residual (in terms of absolute value) around 80 weeks of gestation, which is likely an outlier that has no reason to be there, as no humans can possibly gestate for 80 weeks (~1.54 years).
 
 The residual graph for Plurality (truncated) has decreasing residuals (in terms of absolute value) as plurality increases. This makes sense, as birth weight should get smaller (and as a result range of birth weights should get tighter, leading to smaller absolute value residuals) as more babies share a womb and share nutrients -- More sharing will biologically cause them to come out smaller.
@@ -329,9 +357,10 @@ The residual graph for Mother's age is fairly random, with residuals getting a b
 
 
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 model2 = lm(data = births_excl, BWTG ~ GEST + GEST2 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
 summary(model2)
+par(mfrow = c(2,2))
 plot(model2)
 # plot(model2$fitted.values, model2$residuals)
 plot(births_excl$GEST, model2$residuals)
@@ -341,11 +370,14 @@ plot(births_excl$smoking_type, model2$residuals)
 plot(births_excl$MRACER, model2$residuals)
 plot(births_excl$MAGE, model2$residuals)
 ```
+</br>
+</br>
 The new model still displays the original downwards trend in the residual vs gestational period graph. Perhaps another transformation on GEST would be helpful -- a cubic term can be added. The other residuals plots also retain their trends from model 1.
 
-```{r}
+```{r, fig.width=5, fig.height=4}
 model3 = lm(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
 summary(model3)
+par(mfrow = c(2,2))
 plot(model3)
 # plot(model3$fitted.values, model3$residuals)
 plot(births_excl$GEST, model3$residuals)
@@ -355,11 +387,14 @@ plot(births_excl$smoking_type, model3$residuals)
 plot(births_excl$MRACER, model3$residuals)
 plot(births_excl$MAGE, model3$residuals)
 ```
+</br>
+</br>
 The residual vs gestational period shows a much more random pattern than before. It is worth investigating if adding a quartic term would help. The other residuals plots also retain their trends from model 1.
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 model4 = lm(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
 summary(model4)
+par(mfrow = c(2,2))
 plot(model4)
 # plot(model4$fitted.values, model4$residuals)
 plot(births_excl$GEST, model4$residuals)
@@ -369,17 +404,18 @@ plot(births_excl$smoking_type, model4$residuals)
 plot(births_excl$MRACER, model4$residuals)
 plot(births_excl$MAGE, model4$residuals)
 ```
-
+</br>
+</br>
 The addition of the quartic term does not seem to help. The residual vs gestational period graph shows that residuals increase in absolute value as gestational period increases from 20 to 40 weeks. These residuals are much less random than that of model 3.
 
 Model 3 looks like the best, but perhaps we can use robust regression to improve upon this the massive residual of the outlier point near 80 weeks of gestational age.
 
-### Robust on Model 3
+### Robust on Model 4
 
-```{r}
-
-robust1 <- rlm(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+```{r, fig.width=7, fig.height=5}
+robust1 <- rlm(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
 summary(robust1)
+par(mfrow = c(2,2))
 plot(robust1)
 # plot(robust1$fitted.values, robust1$residuals)
 plot(births_excl$GEST, robust1$residuals)
@@ -394,6 +430,8 @@ robust1_weights = data.frame(bwt = births_excl$BWTG, gest = births_excl$GEST,
  resid=robust1$resid, weight=robust1$w)
 robust1_weights[order(robust1$w)[c(1:5, (length(robust1$w)-5):length(robust1$w))],]
 ```
+</br>
+</br>
 
 #### Note: change below to indicate taking out outlier
 
@@ -402,8 +440,7 @@ Checking the weights, the outlier point at gest = 83 with the residual of 57619 
 Looking at the residual plot for gestational period, the residuals look mostly random (ignoring the outlier point at gest = 83).
 
 ## Cross Validation
-```{r}
-#Create folds
+```{r, eval=FALSE}
 births_cv<-births_excl[sample(nrow(births_excl)),]
 folds<-cut(seq(1,nrow(births_cv)),breaks=10,labels=FALSE)
 test_list<-list()
@@ -452,14 +489,14 @@ for(i in 1:10){
 }
 test_mse<-append(test_mse,list(model4_test_mse))
 
-#Train and test robust1
-robust1_test_mse<-list()
-for(i in 1:10){
-  robust1_train<-rlm(data=train_list[[i]],BWTG~GEST+GEST2+GEST3+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
-  robust1_test<-predict(robust1_train,train_list[[i]])
-  robust1_test_mse[[i]]<-mean((train_list[[i]]$BWTG-robust1_test)^2)
-}
-test_mse<-append(test_mse,list(robust1_test_mse))
+Train and test robust1
+ robust1_test_mse<-list()
+# for(i in 1:10){
+#   robust1_train<-rlm(data=train_list[[i]],BWTG~GEST+GEST2+GEST3+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
+#   robust1_test<-predict(robust1_train,train_list[[i]])
+#   robust1_test_mse[[i]]<-mean((train_list[[i]]$BWTG-robust1_test)^2)
+# }
+ test_mse<-append(test_mse,list(robust1_test_mse))
 
 #Results
 results_cv<-matrix(c(lapply(test_mse,mean)),ncol=5)
