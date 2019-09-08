@@ -334,13 +334,7 @@ model1 = lm(data = births_excl, BWTG ~ GEST + PARITY_truncated + PLUR_truncated 
 summary(model1)
 par(mfrow = c(2,2))
 plot(model1)
-# plot(model1$fitted.values, model1$residuals)
 plot(births_excl$GEST, model1$residuals)
-plot(births_excl$PLUR_truncated, model1$residuals)
-plot(births_excl$PARITY_truncated, model1$residuals)
-plot(births_excl$smoking_type, model1$residuals)
-plot(births_excl$MRACER, model1$residuals)
-plot(births_excl$MAGE, model1$residuals)
 ```
 </br>
 </br>
@@ -382,11 +376,6 @@ par(mfrow = c(2,2))
 plot(model3)
 # plot(model3$fitted.values, model3$residuals)
 plot(births_excl$GEST, model3$residuals)
-plot(births_excl$PLUR_truncated, model3$residuals)
-plot(births_excl$PARITY_truncated, model3$residuals)
-plot(births_excl$smoking_type, model3$residuals)
-plot(births_excl$MRACER, model3$residuals)
-plot(births_excl$MAGE, model3$residuals)
 ```
 </br>
 </br>
@@ -399,11 +388,6 @@ par(mfrow = c(2,2))
 plot(model4)
 # plot(model4$fitted.values, model4$residuals)
 plot(births_excl$GEST, model4$residuals)
-plot(births_excl$PLUR_truncated, model4$residuals)
-plot(births_excl$PARITY_truncated, model4$residuals)
-plot(births_excl$smoking_type, model4$residuals)
-plot(births_excl$MRACER, model4$residuals)
-plot(births_excl$MAGE, model4$residuals)
 ```
 </br>
 </br>
@@ -420,11 +404,6 @@ par(mfrow = c(2,2))
 plot(robust1)
 # plot(robust1$fitted.values, robust1$residuals)
 plot(births_excl$GEST, robust1$residuals)
-plot(births_excl$PLUR_truncated, robust1$residuals)
-plot(births_excl$PARITY_truncated, robust1$residuals)
-plot(births_excl$smoking_type, robust1$residuals)
-plot(births_excl$MRACER, robust1$residuals)
-plot(births_excl$MAGE, robust1$residuals)
 
 #Check weights
 robust1_weights = data.frame(bwt = births_excl$BWTG, gest = births_excl$GEST,
