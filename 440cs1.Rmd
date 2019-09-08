@@ -3,8 +3,10 @@ title: "440 Case Study I"
 author: "Jake Epstein, Daniel Spottiswood, Michael Tan, Sahil Patel, Man-Lin Hsiao"
 date: "9/3/2019"
 output:
-  pdf_document: 
+  pdf_document:
     dev: png
+    fig_height: 2.5
+    fig_width: 4
   html_document: default
 ---
 
@@ -14,6 +16,7 @@ output:
 library(dplyr)
 library(ggplot2)
 library(MASS)
+library(gridExtra)
 
 ## read in data
 births = read.csv("data/Yr1116Birth.csv", na.strings = "9999")
@@ -210,8 +213,8 @@ There appears to be a non linear positive relationship between gestation period 
 ggplot(data = births, mapping = aes(x = MAGE, y = BWTG)) +
   xlab("Age of Mother (years)") + 
   ylab("Birth weight (g)") + 
-  geom_smooth(method='lm', na.rm = TRUE) + 
   geom_point() +
+  geom_smooth(method='lm', na.rm = TRUE) + 
   ggtitle("NC Births, 2011-2016") + 
   theme_minimal()
 
@@ -316,7 +319,7 @@ The residuals vs fitted values and residuals vs gestational period plot slope do
 
 The residual graph for Plurality (truncated) has decreasing residuals (in terms of absolute value) as plurality increases. This makes sense, as birth weight should get smaller (and as a result range of birth weights should get tighter, leading to smaller absolute value residuals) as more babies share a womb and share nutrients -- More sharing will biologically cause them to come out smaller.
 
-The residual graph for Parity (truncated) has pretty random residuals that are all around the same size for each group. 
+The residual graph for Parity (truncated) has pretty random residuals that are all around the same size for each group.
 
 The residual graph for Smoking has higher residuals for no smoking than for smoking of any kind. This makes sense, as birth weight could biologically get smaller in the presence of smoking, as smoking can be damaging to the fetus and be detrimental to its growth and weight. This would lead to the range of birth weights of smoking mothers getting tighter, leading to smaller absolute value residuals.
 
@@ -387,7 +390,7 @@ plot(births_excl$MRACER, robust1$residuals)
 plot(births_excl$MAGE, robust1$residuals)
 
 #Check weights
-robust1_weights = data.frame(bwt = births_excl$BWTG, gest = births_excl$GEST, 
+robust1_weights = data.frame(bwt = births_excl$BWTG, gest = births_excl$GEST,
  resid=robust1$resid, weight=robust1$w)
 robust1_weights[order(robust1$w)[c(1:5, (length(robust1$w)-5):length(robust1$w))],]
 ```
