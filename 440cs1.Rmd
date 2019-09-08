@@ -414,52 +414,52 @@ for(i in 1:10){
 }
 
 #Train and test model1
-model1_test_mse<-list()
+model1_test_mse<-c()
 for(i in 1:10){
   model1_train<-lm(data=train_list[[i]],BWTG~GEST+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
   model1_test<-predict(model1_train,train_list[[i]])
-  model1_test_mse[[i]]<-mean((train_list[[i]]$BWTG-model1_test)^2)
+  model1_test_mse[[i]]<-(mean((train_list[[i]]$BWTG-model1_test)^2))
 }
-test_mse<-list(model1_test_mse)
+test_mse<-c(mean(model1_test_mse))
 
 #Train and test model2
-model2_test_mse<-list()
+model2_test_mse<-c()
 for(i in 1:10){
   model2_train<-lm(data=train_list[[i]],BWTG~GEST+GEST2+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
   model2_test<-predict(model2_train,train_list[[i]])
   model2_test_mse[[i]]<-mean((train_list[[i]]$BWTG-model2_test)^2)
 }
-test_mse<-append(test_mse,list(model2_test_mse))
+test_mse<-append(test_mse, mean(model2_test_mse))
 
 #Train and test model3
-model3_test_mse<-list()
+model3_test_mse<-c()
 for(i in 1:10){
   model3_train<-lm(data=train_list[[i]],BWTG~GEST+GEST2+GEST3+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
   model3_test<-predict(model3_train,train_list[[i]])
   model3_test_mse[[i]]<-mean((train_list[[i]]$BWTG-model3_test)^2)
 }
-test_mse<-append(test_mse,list(model3_test_mse))
+test_mse<-append(test_mse, mean(model3_test_mse))
 
 #Train and test model4
-model4_test_mse<-list()
+model4_test_mse<-c()
 for(i in 1:10){
   model4_train<-lm(data=train_list[[i]],BWTG~GEST+GEST2+GEST3+GEST4+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
   model4_test<-predict(model4_train,train_list[[i]])
   model4_test_mse[[i]]<-mean((train_list[[i]]$BWTG-model4_test)^2)
 }
-test_mse<-append(test_mse,list(model4_test_mse))
+test_mse<-append(test_mse, mean(model4_test_mse))
 
 #Train and test robust1
-robust1_test_mse<-list()
+robust1_test_mse<-c()
 for(i in 1:10){
   robust1_train<-rlm(data=train_list[[i]],BWTG~GEST+GEST2+GEST3+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
   robust1_test<-predict(robust1_train,train_list[[i]])
   robust1_test_mse[[i]]<-mean((train_list[[i]]$BWTG-robust1_test)^2)
 }
-test_mse<-append(test_mse,list(robust1_test_mse))
+test_mse<-append(test_mse, mean(robust1_test_mse))
 
 #Results
-results_cv<-matrix(c(lapply(test_mse,mean)),ncol=5)
+results_cv<-matrix(test_mse,ncol=5)
 colnames(results_cv)<-c('model1','model2','model3','model4','robust1')
 rownames(results_cv)<-c('Average MSE')
 results<-as.table(results_cv)
