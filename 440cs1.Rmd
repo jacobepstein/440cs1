@@ -42,6 +42,7 @@ select = dplyr::select
 ```
 
 
+### Make smaller subset -- take out in final version, just for formatting
 ```{r}
 births = sample_n(births, 10000)
 deaths = sample_n(deaths, 1000)
