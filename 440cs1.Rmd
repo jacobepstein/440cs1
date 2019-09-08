@@ -68,7 +68,7 @@ ggplot(births %>% filter(smoked_during), aes(x = total_smoked))+
   geom_histogram() +
   theme_minimal()
 
-births %>% filter(smoked_during) %>% select(total_smoked) %>% unlist() %>% mean()
+mean(births %>% filter(smoked_during) %>% select(total_smoked) %>% unlist())
 
 ggplot(births, aes(x= smoked_during, y = BWTG)) +
   geom_boxplot()+
