@@ -505,3 +505,16 @@ rownames(results_cv)<-c('Average MSE')
 results<-as.table(results_cv)
 results
 ```
+
+```{r}
+library(quantreg)
+
+medqr <- rq(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+summary(medqr)
+
+lowqr <- rq(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude", tau=0.05)
+summary(lowqr)
+
+highqr <- rq(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude", tau=0.95)
+summary(highqr)
+```
