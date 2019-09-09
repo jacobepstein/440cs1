@@ -19,6 +19,7 @@ library(dplyr)
 library(ggplot2)
 library(MASS)
 library(gridExtra)
+library(quantreg)
 knitr::opts_chunk$set(warning=FALSE)
 ```
 
@@ -52,15 +53,14 @@ deaths = sample_n(deaths, 1000)
 ## Exploratory Data Analysis
 
 ### Birthweight
-```{r, echo=FALSE, message=FALSE}
-summary(births$BWTG)
-sd(births$BWTG, na.rm = TRUE)
+```{r, echo=FALSE, message=FALSE, fig.width=5, fig.height=2.5}
 ggplot(births, aes(x= BWTG))+
   geom_histogram(binwidth=100, colour="black", 
                           aes(y=..density.., fill=..count..), position = "stack") + 
   stat_function(fun = dnorm, color = "red", args = list(mean = mean(births$BWTG, na.rm = TRUE), sd = sd(births$BWTG, na.rm = TRUE))) +
   theme_minimal()
 ```
+</br>
 </br>
 </br>
 Birthweight is close to normally distrubted, with a slight left skew, centered around ~3300g with a standard deviation of 600g. There appear to be no large outliers in terms of birthweight. 430 birth weights are missing. We see that the left tail is much larger than we would expect in a normal distribution
@@ -78,25 +78,25 @@ births = births %>%
   mutate(total_smoked = CIGFN+CIGSN+CIGLN) %>%
   mutate(smoked_during = total_smoked >0)
 
-mean(births$smoked_during,na.rm=TRUE)
-
-mean(births$CIGPN_binary, na.rm = TRUE)
-mean(births$CIGFN_binar, na.rm = TRUE)
-mean(births$CIGSN_binary,na.rm = TRUE)
-mean(births$CIGLN_binary, na.rm = TRUE)
+#mean(births$smoked_during,na.rm=TRUE)
+#mean(births$CIGPN_binary, na.rm = TRUE)
+#mean(births$CIGFN_binar, na.rm = TRUE)
+#mean(births$CIGSN_binary,na.rm = TRUE)
+#mean(births$CIGLN_binary, na.rm = TRUE)
 
 ggplot(births %>% filter(smoked_during), aes(x = total_smoked))+
   geom_histogram() +
+  xlab("Cigarrete Consumption per Week")+
   theme_minimal()
 
-mean(births %>% filter(smoked_during) %>% select(total_smoked) %>% unlist())
+#mean(births %>% filter(smoked_during) %>% select(total_smoked) %>% unlist())
 
 ggplot(births, aes(x= smoked_during, y = BWTG)) +
   geom_boxplot()+
+  xlab("Smoked During Pregnancy")+
+  ylab("Birth Weight (g)")+
+  ggtitle("NC Births, 2011-2016") +
   theme_minimal()
-
-lm_smoking_v_non = lm(data=births, BWTG~smoked_during)
-summary(lm_smoking_v_non)
 
 
 births = births %>%
@@ -108,10 +108,10 @@ births = births %>%
 
 ggplot(births, aes(x= smoking_type, y = BWTG)) +
   geom_boxplot()+
+  xlab("Smoking in Relation to Pregnancy")+
+  ylab("Birth Weight (g)")+
+  ggtitle("NC Births, 2011-2016") +
   theme_minimal()
-
-lm_smoking = lm(data=births, BWTG~smoking_type)
-summary(lm_smoking)
 
 ```
 </br>
@@ -123,7 +123,6 @@ Around 13% of women smoked in the three months leading up to pregnancy and aroun
 
 ```{r, echo=FALSE, message=FALSE, fig.width=5, fig.height=2.5}
 # Check the parity frequencies
-summary(births$PARITY)
 births$PARITY = as.numeric(births$PARITY)
 births = births %>% 
   mutate(PARITY_truncated = ifelse(
@@ -138,10 +137,6 @@ ggplot(births, aes(x = PARITY)) +
   stat_count()+
   theme_minimal()
 
-# Model without any change, significant up to the low teens
-parity_reg = lm(BWTG ~ PARITY, births)
-summary(parity_reg)
-
 # Rerun EDA with truncated data
 births$PARITY_truncated = as.factor(births$PARITY_truncated)
 ggplot(births, aes(x = PARITY_truncated)) +
@@ -153,8 +148,6 @@ ggplot(data = births, mapping = aes(x = PARITY_truncated, y = BWTG)) +
   ggtitle("NC Births, 2011-2016") +
   theme_minimal()
 
-parity_truncated_reg = lm(BWTG ~ PARITY_truncated, births)
-summary(parity_truncated_reg)
 ```
 </br>
 </br>
@@ -162,7 +155,7 @@ Independent of other variables, we see a negative relationship between parity an
 
 ### Plurality
 
-```{r, echo=FALSE, message=FALSE}
+```{r, echo=FALSE, message=FALSE, fig.width=5, fig.height=2.5}
 # Check the plurality frequencies
 births$PLUR = as.numeric(births$PLUR)
 
@@ -179,11 +172,10 @@ ggplot(data = births, mapping = aes(x = PLUR, y = BWTG)) +
 
 ggplot(births, aes(x = PLUR)) +
   stat_count() +
+  xlab("Plurality") +
   theme_minimal()
 
-plurality_reg = lm(BWTG ~ PLUR, births)
-summary(plurality_reg)
-
+# Rerun EDA with truncated data
 births$PLUR_truncated = as.factor(births$PLUR_truncated)
 
 ggplot(data = births, mapping = aes(x = PLUR_truncated, y = BWTG)) +
@@ -196,13 +188,12 @@ ggplot(data = births, mapping = aes(x = PLUR_truncated, y = BWTG)) +
 
 ggplot(births, aes(x = PLUR_truncated)) +
   stat_count() + 
+  xlab("Plurality") +
   theme_minimal()
-
-plurality_reg_truncated = lm(BWTG ~ PLUR_truncated, births)
-summary(plurality_reg_truncated)
 ```
 </br>
-We see a strong non linear negative relationship between plurality and birth weight. The frequency of pluralities above two is extremely small, and we again see a proportionally small amount of missing data. A second variable was created that truncates pluralities of at least three to improve interprability and prevent overfitting
+</br>
+We see a strong non linear negative relationship between plurality and birth weight. The frequency of pluralities above two is extremely small, and we again see a proportionally small amount of missing data. A second variable was created that truncates pluralities of at least three to improve interprability and prevent overfitting. 
 
 ### Gestation
 
@@ -218,10 +209,8 @@ ggplot(data = births, mapping = aes(x = as.factor(GEST), y = BWTG)) +
 
 ggplot(births, aes(x = GEST)) +
   stat_count() + 
+  xlab("Gestation Period (weeks)") +
   theme_minimal()
-
-gest_reg = lm(BWTG ~ GEST, births)
-summary(gest_reg)
 ```
 </br>
 </br>
@@ -229,8 +218,7 @@ There appears to be a non linear positive relationship between gestation period 
 
 ### Age of Mother
 
-```{r, echo=FALSE, message=FALSE}
-
+```{r, echo=FALSE, message=FALSE, fig.width=5, fig.height=2.5}
 ggplot(data = births, mapping = aes(x = MAGE, y = BWTG)) +
   xlab("Age of Mother (years)") + 
   ylab("Birth weight (g)") + 
@@ -244,19 +232,16 @@ ggplot(births, aes(x = MAGE)) +
   geom_histogram(binwidth=1, colour="black", 
                           aes(y=..density.., fill=..count..), position = "stack") + 
   stat_function(fun = dnorm, color = "red", args = list(mean = mean(births$MAGE, na.rm = TRUE), sd = sd(births$MAGE, na.rm = TRUE))) +
+  xlab("Age of Mother (years)") + 
   theme_minimal()
-
-mage_reg = lm(BWTG ~ MAGE, births)
-summary(mage_reg)
 ```
 </br>
 </br>
-Mother's age seems to be fairly normally distributed with a mean of 27.8. There appears to be a positive relationship between the age of the mother and the birth weight. There is no evidence to suggest that the birth weight variance is not constant across the mother's age.
+Mother's age seems to be fairly normally distributed with a mean of 27.7. There appears to be a positive relationship between the age of the mother and the birth weight. There is no evidence to suggest that the birth weight variance is not constant across the mother's age.
 
 ### Race of Mother
 
-```{r, echo=FALSE, message=FALSE}
-
+```{r, echo=FALSE, message=FALSE, fig.width=5, fig.height=2.5}
 births$MRACER = as.factor(births$MRACER)
 ggplot(data = births, mapping = aes(x = MRACER, y = BWTG)) +
   xlab("Race of Mother") + 
@@ -265,26 +250,28 @@ ggplot(data = births, mapping = aes(x = MRACER, y = BWTG)) +
   ggtitle("NC Births, 2011-2016") + 
   theme_minimal()
 
-bw_race_avgs = births %>%
-  group_by(MRACER) %>%
-  summarize(mweight = mean(BWTG, na.rm = TRUE), freq_percent = n()/nrow(births))
-bw_race_avgs
-
 ggplot(births, aes(x = MRACER)) +
   stat_count() +
+  xlab("Race of Mother") +
   theme_minimal()
-
-mage_reg = lm(BWTG ~ MRACER, births)
-summary(mage_reg)
 ```
 </br>
 </br>
-0 - non-white,, 1 = white, 2 black, 3 indian, 8 other asian
 
-There are significant differences between the average birth weights of mother's of different races. We see that mother's that self identified as white have the largest mean baby weight at 3.33 kg, while black mother's have the lowest mean baby weight at only 3.07 kg. 58 percent of mother's identify as white, 24 percent identify as black, 12 percent identify as non-white, and 3 percent identify as other asian.
+0 - Other non-White
+1 - White
+2 - Black or African American
+3 - American Indian or Alaska Native
+4 - Chinese
+5 - Japanese
+6 - Native Hawaiian
+7 - Filipino
+8 - Other Asian 
+
+There are significant differences between the average birth weights of mother's of different races. We see that mother's that self identified as white have the largest mean baby weight at 3.33 kg, while black mother's have the lowest mean baby weight at only 3.07 kg. 58 percent of mother's identify as white, 24 percent identify as black, 12 percent identify as other non-white, and 3 percent identify as other asian.
 
 ### County / Socioeconomic Status
-```{r, echo=FALSE, message=FALSE}
+```{r, echo=FALSE, message=FALSE, fig.width=5, fig.height=2.5}
 
 #calculate infant mortality by county, to use as a proxy for socioconomic status
 deaths_by_county = deaths %>%
@@ -301,30 +288,25 @@ infant_mortality = merge(deaths_by_county, births_by_county, by = "CORES") %>%
   select(-n_births, -n_deaths)
 
 births = merge(births, infant_mortality, by = "CORES")
-
-summary(births$mortality)
-
+bwtg_vs_mortality = lm(data = births, BWTG~mortality)
 ggplot(births, aes(x= mortality))+
   geom_histogram() +
   xlab("Mortality Rate (%)")+
   theme_minimal() +
   ggtitle("Histogram of Infant Mortality Rate by County")
 
-bwtg_vs_mortality = lm(data = births, BWTG~mortality)
-summary(bwtg_vs_mortality)
-
 ggplot(births, aes(x = mortality, y = BWTG))+
   geom_point() +
   geom_abline(slope = bwtg_vs_mortality$coefficients[[2]], intercept = bwtg_vs_mortality$coefficients[[1]])+
+  xlab("Mortality Rate (%)") +
+  ylab("Birth Weight (g)") +
   theme_minimal()
-
-
 ```
 </br>
 </br>
 We chose to use infant mortality rate of birth county as a proxy for socioeconomic status, calculated as number of deaths before the age of 1 divided by total number of births in a county. The median county in the data had a infant mortality rate of 0.7%, with the range of infant mortality rates in our dataset ranging from 0.12% to 1.76%. Infant mortality rate of birth county and birth weight appear to have a weak negative linear relationship, and in isolation, a 1 percentage point increase in infant mortality rate is associated with a 157g decrease in expected birth weight.
-## Build Model
 
+## Build Model
 ```{r, fig.width=7, fig.height=5}
 births_excl = na.omit(births)
 births_excl = births_excl[which(births_excl$GEST < 80), ]
@@ -487,7 +469,6 @@ results
 As illustrated by the table above, model4 has the lowest MSE out of all models utilised. This implies that However, model3 is the second lowest and therefore exhibits the least amount of overfitting for a valid model.
 
 ```{r}
-library(quantreg)
 
 medqr <- rq(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
 summary(medqr)
