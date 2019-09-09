@@ -1,29 +1,30 @@
 ---
-title: "440 Case Study I"
+title: "440 Case Study I Interim Report"
 author: "Jake Epstein, Daniel Spottiswood, Michael Tan, Sahil Patel, Man-Lin Hsiao"
-date: "9/3/2019"
+date: "9/10/2019"
 output:
+  html_document: default
   pdf_document:
     dev: png
     fig_height: 2.5
     fig_width: 4
-  html_document: default
 ---
 
-## Set Up
+## Introduction
 
-### Load Necessary Packages
-```{r, message=FALSE}
+In this report, we will be investigating the relationship between birthweight and various factors. The data we will be analyzing includes children born in North Carolina between 2011 and 2016, totaling 720 thousand observations. In addition to birthweight, this data includes factors such as sex, gestation period, smoking behavior, mother's race, and county of residence, which we used as a proxy for mother's socioeconomic status. We will first explore each of these variables and determine which factors are relevant to birthweight, then use the relevant factors to create and evaluate a linear regression model. We will also use M-estimation to create a more robust model. Finally, we will use cross-validation to compare our chosen linear model with the more robust version.
+
+
+```{r, message=FALSE, echo=FALSE}
 ## load packages
 library(dplyr)
 library(ggplot2)
 library(MASS)
 library(gridExtra)
 library(quantreg)
-knitr::opts_chunk$set(warning=FALSE)
+knitr::opts_chunk$set(warning=FALSE, echo=FALSE)
 ```
 
-### Load and Clean Data
 ```{r}
 ## read in data
 births = read.csv("data/Yr1116Birth.csv", na.strings = "9999")
@@ -63,7 +64,28 @@ ggplot(births, aes(x= BWTG))+
 </br>
 </br>
 </br>
-Birthweight is close to normally distrubted, with a slight left skew, centered around ~3300g with a standard deviation of 600g. There appear to be no large outliers in terms of birthweight. 430 birth weights are missing. We see that the left tail is much larger than we would expect in a normal distribution
+Birthweight is close to normally distrubted, with a slight left skew, centered around ~3300g with a standard deviation of 600g. There appear to be no large outliers in terms of birthweight. 430 birth weights are missing. We see that the left tail is much larger than we would expect in a normal distribution. We'll keep this in mind when evaluating the assumptions of linear regression.
+
+### Sex
+
+```{r}
+births$SEX[which(births$SEX == 1)] = "Male"
+births$SEX[which(births$SEX == 2)] = "Female"
+
+
+ggplot(data = na.omit(births), mapping = aes(x = as.factor(SEX), y = BWTG)) +
+  geom_boxplot() + xlab("Sex") + ylab("Birth weight (g)") + 
+  ggtitle("NC Births, 2011-2016") + theme_minimal()
+
+births %>%
+  na.omit() %>%
+  group_by(SEX) %>%
+  summarize("Average Birthweight" = mean(BWTG))
+```
+</br>
+</br>
+On average, males in our data are about 100g heavier than females at birth.
+
 
 ### Smoking
 ```{r, echo=FALSE, message=FALSE, fig.width=5, fig.height=2.5}
@@ -78,15 +100,10 @@ births = births %>%
   mutate(total_smoked = CIGFN+CIGSN+CIGLN) %>%
   mutate(smoked_during = total_smoked >0)
 
-#mean(births$smoked_during,na.rm=TRUE)
-#mean(births$CIGPN_binary, na.rm = TRUE)
-#mean(births$CIGFN_binar, na.rm = TRUE)
-#mean(births$CIGSN_binary,na.rm = TRUE)
-#mean(births$CIGLN_binary, na.rm = TRUE)
 
 ggplot(births %>% filter(smoked_during), aes(x = total_smoked))+
   geom_histogram() +
-  xlab("Cigarrete Consumption per Week")+
+  xlab("Cigarette Consumption per Week")+
   theme_minimal()
 
 #mean(births %>% filter(smoked_during) %>% select(total_smoked) %>% unlist())
@@ -98,13 +115,17 @@ ggplot(births, aes(x= smoked_during, y = BWTG)) +
   ggtitle("NC Births, 2011-2016") +
   theme_minimal()
 
-
 births = births %>%
   mutate(smoking_type = ifelse(smoked_during, 
       ifelse(CIGPN_binary, "before and during", "during only"),
       ifelse(CIGPN_binary, "before only", "none"))) %>%
   mutate(smoking_type = relevel(as.factor(smoking_type), ref = 4))
 
+
+births %>%
+  na.omit() %>%
+  group_by(smoking_type) %>%
+  summarize("Average Birthweight" = mean(BWTG))
 
 ggplot(births, aes(x= smoking_type, y = BWTG)) +
   geom_boxplot()+
@@ -116,7 +137,10 @@ ggplot(births, aes(x= smoking_type, y = BWTG)) +
 ```
 </br>
 </br>
-Around 13% of women smoked in the three months leading up to pregnancy and around 10% of women at any point during their pregnancy. Among those who did smoke during pregnance, the average number of cigarettes smoked during pregnancy was 23. The birthweight of children of smokers was significantly lower than that of the children of nonsmokers, with an average difference of 231 grams. There is also a significant relationship between birthweight and smoking before pregnancy, even for those who did not smoke during pregnancy.
+Because the average cigarette consumption in our data varied quite a bit, and because this data was likely self-reported, we chose to simplify our analysis on smoking, and chose to turn smoking into a categorical variable, with mothers classified as either non-smokers, those who only smoked before pregnancy, those who smoked during but not before pregnancy, and those who smoked throughout.
+</br>
+</br>
+Around 13% of women smoked in the three months leading up to pregnancy and around 10% of women smoked at any point during their pregnancy. Among those who did smoke during pregnancy, the average number of cigarettes smoked during pregnancy was 23. The birthweight of children of mothers who smoked before and during pregnancy was significantly lower than that of the children of nonsmokers, with an average difference of about 200 grams. There is also a significant relationship between birthweight and smoking before pregnancy, even for those who did not smoke during pregnancy.
 
 
 ### Parity
@@ -133,6 +157,7 @@ births$PARITY = as.factor(births$PARITY)
 ggplot(data = births, mapping = aes(x = PARITY, y = BWTG)) +
   geom_boxplot() + xlab("Parity") + ylab("Birth weight (g)") + 
   ggtitle("NC Births, 2011-2016") + theme_minimal()
+
 ggplot(births, aes(x = PARITY)) +
   stat_count()+
   theme_minimal()
@@ -297,7 +322,7 @@ ggplot(births, aes(x= mortality))+
 
 ggplot(births, aes(x = mortality, y = BWTG))+
   geom_point() +
-  geom_abline(slope = bwtg_vs_mortality$coefficients[[2]], intercept = bwtg_vs_mortality$coefficients[[1]])+
+  geom_abline(slope = bwtg_vs_mortality$coefficients[[2]], intercept = bwtg_vs_mortality$coefficients[[1]], color = "blue")+
   xlab("Mortality Rate (%)") +
   ylab("Birth Weight (g)") +
   theme_minimal()
@@ -402,7 +427,7 @@ Checking the weights, the outlier point at gest = 83 with the residual of 57619 
 Looking at the residual plot for gestational period, the residuals look mostly random (ignoring the outlier point at gest = 83).
 
 ## Cross Validation
-```{r, eval=FALSE}
+```{r}
 births_cv<-births_excl[sample(nrow(births_excl)),]
 folds<-cut(seq(1,nrow(births_cv)),breaks=10,labels=FALSE)
 test_list<-list()
@@ -467,15 +492,3 @@ results<-as.table(results_cv)
 results
 ```
 As illustrated by the table above, model4 has the lowest MSE out of all models utilised. This implies that However, model3 is the second lowest and therefore exhibits the least amount of overfitting for a valid model.
-
-```{r}
-
-medqr <- rq(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
-summary(medqr)
-
-lowqr <- rq(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude", tau=0.05)
-summary(lowqr)
-
-highqr <- rq(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude", tau=0.95)
-summary(highqr)
-```
