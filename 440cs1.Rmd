@@ -484,6 +484,7 @@ rownames(results_cv)<-c('Average MSE')
 results<-as.table(results_cv)
 results
 ```
+As illustrated by the table above, model4 has the lowest MSE out of all models utilised. This implies that However, model3 is the second lowest and therefore exhibits the least amount of overfitting for a valid model.
 
 ```{r}
 library(quantreg)
