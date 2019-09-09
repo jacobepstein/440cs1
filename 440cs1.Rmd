@@ -46,7 +46,7 @@ select = dplyr::select
 
 ### Make smaller subset -- take out in final version, just for formatting
 ```{r}
-births = sample_n(births, 10000)
+births = sample_n(births, 50000)
 deaths = sample_n(deaths, 1000)
 ```
 
@@ -337,47 +337,57 @@ births_excl = na.omit(births)
 births_excl = births_excl[which(births_excl$GEST < 80), ]
 births_excl = births_excl %>%
   mutate(GEST2 = GEST^2, GEST3 = GEST ^ 3, GEST4 = GEST^4)
-model1 = lm(data = births_excl, BWTG ~ GEST + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+
+model1 = lm(data = births_excl, BWTG ~ SEX + GEST + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
 summary(model1)
 par(mfrow = c(2,2))
 plot(model1)
 plot(births_excl$GEST, model1$residuals)
+plot(births_excl$PLUR_truncated, model1$residuals)
+plot(births_excl$PARITY_truncated, model1$residuals)
+plot(births_excl$smoking_type, model1$residuals)
+plot(births_excl$MRACER, model1$residuals)
+plot(births_excl$MAGE, model1$residuals)
 ```
 </br>
 </br>
-The residuals vs fitted values and residuals vs gestational period plot slope downwards, indicating that there is a departure from linearity. More precisely, the linear model underpredicts when gestational period is below ~30 and overpredicts when gestational period is above ~30. A transformation may be helpful. The model may improve if a square term is added. There is a particularly high residual (in terms of absolute value) around 80 weeks of gestation, which is likely an outlier that has no reason to be there, as no humans can possibly gestate for 80 weeks (~1.54 years).
 
+In building the model, we chose to drop the point at 80 weeks of gestation, which is likely an outlier that has no reason to be there, as no human can possibly gestate for 80 weeks (~1.54 years). Additionally, we dropped all rows with missing data, as the quality of that data may be questionable. We chose to include all factors we explored earlier into this model, and found each of the factors to be statistically significant predictors of birthweight.
+
+The residuals vs fitted values and residuals vs gestational period plot slope downwards, indicating that there is a departure from linearity. More precisely, the linear model underpredicts when gestational period is below ~30 and overpredicts when gestational period is above ~30. A transformation may be helpful. The model may improve if a square term is added for gestation. Furthermore, the Q-Q plot indicates a departure from normality, likely as a result of the left skew of birthweight. We will keep this in mind as we make improvements to this initial model.
+</br>
+</br>
 The residual graph for Plurality (truncated) has decreasing residuals (in terms of absolute value) as plurality increases. This makes sense, as birth weight should get smaller (and as a result range of birth weights should get tighter, leading to smaller absolute value residuals) as more babies share a womb and share nutrients -- More sharing will biologically cause them to come out smaller.
-
+</br>
+</br>
 The residual graph for Parity (truncated) has pretty random residuals that are all around the same size for each group.
-
+</br>
+</br>
 The residual graph for Smoking has higher residuals for no smoking than for smoking of any kind. This makes sense, as birth weight could biologically get smaller in the presence of smoking, as smoking can be damaging to the fetus and be detrimental to its growth and weight. This would lead to the range of birth weights of smoking mothers getting tighter, leading to smaller absolute value residuals.
-
+</br>
+</br>
 The residual graph for Mother's race indicates that residuals are lower for for races 3, 4, 5, 6, and 7 and higher for the other races. This could be something to explore.
-
+</br>
+</br>
 The residual graph for Mother's age is fairly random, with residuals getting a bit smaller near the beginning and end (<20 years old and >45 years old).
 
 
 
 ```{r, fig.width=7, fig.height=5}
-model2 = lm(data = births_excl, BWTG ~ GEST + GEST2 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+model2 = lm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
 summary(model2)
 par(mfrow = c(2,2))
 plot(model2)
 # plot(model2$fitted.values, model2$residuals)
 plot(births_excl$GEST, model2$residuals)
-plot(births_excl$PLUR_truncated, model2$residuals)
-plot(births_excl$PARITY_truncated, model2$residuals)
-plot(births_excl$smoking_type, model2$residuals)
-plot(births_excl$MRACER, model2$residuals)
-plot(births_excl$MAGE, model2$residuals)
+
 ```
 </br>
 </br>
-The new model still displays the original downwards trend in the residual vs gestational period graph. Perhaps another transformation on GEST would be helpful -- a cubic term can be added. The other residuals plots also retain their trends from model 1.
+For the next iteration of the model, we added a quadratic term for gestation. While the quadratic term is statistically significant, the new model still displays the original downwards trend in the residual vs gestational period graph. Perhaps another transformation on gestation would be helpful -- a cubic term can be added. The other residuals plots also retain their trends from model 1.
 
 ```{r, fig.width=5, fig.height=4}
-model3 = lm(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+model3 = lm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
 summary(model3)
 par(mfrow = c(2,2))
 plot(model3)
@@ -386,10 +396,10 @@ plot(births_excl$GEST, model3$residuals)
 ```
 </br>
 </br>
-The residual vs gestational period shows a much more random pattern than before. It is worth investigating if adding a quartic term would help. The other residuals plots also retain their trends from model 1.
+After adding a cubic term to gestation, the residual vs gestational period shows a much more random pattern than before and the cubic term is statistically significant. It is worth investigating if adding a quartic term would help. The other residuals plots also retain their trends from model 1.
 
 ```{r, fig.width=7, fig.height=5}
-model4 = lm(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+model4 = lm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
 summary(model4)
 par(mfrow = c(2,2))
 plot(model4)
@@ -398,14 +408,12 @@ plot(births_excl$GEST, model4$residuals)
 ```
 </br>
 </br>
-The addition of the quartic term does not seem to help. The residual vs gestational period graph shows that residuals increase in absolute value as gestational period increases from 20 to 40 weeks. These residuals are much less random than that of model 3.
-
-Model 3 looks like the best, but perhaps we can use robust regression to improve upon this the massive residual of the outlier point near 80 weeks of gestational age.
+The addition of the quartic term does seem to help a bit, and it seems that we've gone as far as we can go with polynomial terms on gestation. Despite this, our assumption of normality still does not appear to be totally met, as shown by tbe Q-Q plot, and the residuals are not quite homoskedastic, as the variance of the residuals increases as the fitted values gets larger. Because of this, we should look into more robust methods. For that we will utilize M-estimation.
 
 ### Robust on Model 4
 
 ```{r, fig.width=7, fig.height=5}
-robust1 <- rlm(data = births_excl, BWTG ~ GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+robust1 <- rlm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
 summary(robust1)
 par(mfrow = c(2,2))
 plot(robust1)
@@ -420,11 +428,7 @@ robust1_weights[order(robust1$w)[c(1:5, (length(robust1$w)-5):length(robust1$w))
 </br>
 </br>
 
-#### Note: change below to indicate taking out outlier
-
-Checking the weights, the outlier point at gest = 83 with the residual of 57619 has indeed been weighted down (with a weight of 0.0093). The weights of four other points with high residuals are also weighted down.
-
-Looking at the residual plot for gestational period, the residuals look mostly random (ignoring the outlier point at gest = 83).
+Our robust method downweights the weighting on observations with the largest residuals, as shown above. Looking at the output, it appears we still run into the same challenges as before with normality, even with this more robust approach. We will compare the approaches below by MSE, but it is evident that an even more robust approach, such as quantile regression will be useful in exploring these relationships further.
 
 ## Cross Validation
 ```{r}
