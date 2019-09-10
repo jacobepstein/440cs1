@@ -1,6 +1,6 @@
 ---
 title: "440 Case Study I Interim Report"
-author: "Jake Epstein, Daniel Spottiswood, Michael Tan, Sahil Patel, Man-Lin Hsiao"
+author: "Group 8: Jake Epstein, Daniel Spottiswood, Michael Tan, Sahil Patel, Man-Lin Hsiao"
 date: "9/10/2019"
 output:
   html_document: default
@@ -12,7 +12,7 @@ output:
 
 ## Introduction
 
-In this report, we will be investigating the relationship between birthweight and various factors. The data we will be analyzing includes children born in North Carolina between 2011 and 2016, totaling 720,000 observations. In addition to birthweight, this data includes factors such as sex, gestation period, smoking behavior, mother's race, and county of residence, which we used as a proxy for mother's socioeconomic status. We will first explore each of these variables and determine which factors are relevant to birthweight, and then use the relevant factors to create and evaluate a linear regression model. We will also use M-estimation to create a more robust model. Finally, we will use cross-validation to compare our chosen linear model with the more robust version.
+In this report, we will be investigating the relationship between birthweight and various factors. The data we will be analyzing includes children born in North Carolina between 2011 and 2016, totaling 720,000 observations. In addition to birthweight, this data includes factors such as sex, gestation period, smoking behavior, mother's race, and county of residence, which we used as a proxy for mother's socioeconomic status. We will first explore each of these variables and determine which factors are relevant to birthweight, and then use the relevant factors to create, evaluate and interpret a linear regression model. We will also use M-estimation to create a more robust model. Finally, we will use cross-validation to compare our chosen linear model with the more robust version.
 
 
 ```{r, message=FALSE, echo=FALSE, warning=FALSE}
@@ -23,7 +23,7 @@ library(ggplot2)
 library(MASS)
 library(gridExtra)
 library(quantreg)
-knitr::opts_chunk$set(warning=FALSE, echo=FALSE)
+knitr::opts_chunk$set(warning=FALSE, echo=FALSE, eval=TRUE)
 ```
 
 ```{r}
@@ -278,7 +278,6 @@ ggplot(births, aes(x = MRACER)) +
 </br>
 
 0 - Other non-White
-</br>
 </br>
 1 - White
 </br>
