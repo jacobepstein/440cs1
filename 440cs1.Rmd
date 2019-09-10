@@ -518,6 +518,8 @@ Since our Model 4 seemed to fit the data best, we'll report our conclusions usin
 </br>
 </br>
 Overall, the model does a good job of explaining birthweight, with our selected variables accounting for about 55% of the variation in birthweight in this sample, and each of the variables was highly predictive of birthweight.
+</br>
+</br>
 **Sex** - On average male babies are heavier by about 125 grams, holding all else constant
 </br>
 </br>
