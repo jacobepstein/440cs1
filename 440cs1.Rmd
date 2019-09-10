@@ -501,6 +501,7 @@ Since our Model 4 seemed to fit the data best, we'll report our conclusions usin
 </br>
 </br>
 Overall, the model does a good job of explaining birthweight, with our selected variables accounting for about 55% of the variation in birthweight in this sample, and each of the variables was highly predictive of birthweight.
+<<<<<<< HEAD
 * **Sex** - On average male babies are heavier by about 125 grams, holding all else constant.
 * **Gestation** - Given that there is a polynomial relationship between gestation and birthweight, it is hard to interpret this relationship simply, but in general, longer gestation periods are expected to yield heavier babies.
 * **Parity** - In general, children with a higher parity, that is to say children with more older siblings, tend to be heavier than first-borns. Second-borns are expected to be 85 grams heavier than the average first born, holding all else constant. Other higher-parity children are expected to be even heavier, by about 100 grams versus a first-born.
@@ -512,6 +513,30 @@ Overall, the model does a good job of explaining birthweight, with our selected 
 
 
 
+=======
+**Sex** - On average male babies are heavier by about 125 grams, holding all else constant
+</br>
+</br>
+**Gestation** - Given that there is a polynomial relationship between gestation and birthweight, it is hard to interpret this relationship simply, but in general, longer gestation periods are expected to yield heavier babies.
+</br>
+</br>
+**Parity** - In general, children with a higher parity, that is to say children with more older siblings, tend to be heavier than first-borns. Second-borns are expected to be 85 grams heavier than the average first born, holding all else constant. Other higher-parity children are expected to be even heavier, by about 100 grams versus a first-born.
+</br>
+</br>
+**Plurality** - Twins and triplets (or more) are expected to be much lighter than single-birth babies, by about 310-320 grams.
+</br>
+</br>
+**Smoking** - smoking is expected to have a negative effect on babies' birthweights. Mothers who smoked only during pregnancy are expected to have babies which are about 160 grams lighter. Mothers who smoked in the three months leading up to pregnancy as well are expected to have babies which are about 200 grams lighter. Finally, even mothers who only smoked leading up to pregnancy, but not during, also are expected to have lighter babies, but only by about 10 grams.
+</br>
+</br>
+**Mother's Age** - Our model indicates a small but statistically significant positive effect of mother's age on birthweight. For every year a mother gets older, her baby is expected to be about 4 grams heavier.
+</br>
+</br>
+**Race** - Race is expected to have a significant impact on birthweight. Versus the other-nonwhite category, white mothers are expected to have babies that are about 80 grams heavier. This effect varies by race, but the race which is associated with the lightest babies is Japanese, at about 115 grams lighter than the other category, and the race associated with the heaviest babies is Hawaiian, at about 200 grams heavier.
+</br>
+</br>
+**Infant Mortality Rates** - We used infant mortality rates in county of birth as a proxy for socioeonomic status, which turned out to be a significant predictor of birthweight. However, it's practical impact is not very large. On average, each one additional percentage point increase in infant mortality rate of a county is associated with an increase of about 20 grams in birthweight. It is important to note that the entire range of infant mortality rates in the counties our data comes from is only about 1.5 percentage points, so the practical impact of infant mortality rates on birthweight is not large.
+>>>>>>> a2142cfd0bb502ceae497453e4dfd493331bf595
 
 
 
