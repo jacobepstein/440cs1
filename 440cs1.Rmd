@@ -15,7 +15,7 @@ output:
 In this report, we will be investigating the relationship between birthweight and various factors. The data we will be analyzing includes children born in North Carolina between 2011 and 2016, totaling 720,000 observations. In addition to birthweight, this data includes factors such as sex, gestation period, smoking behavior, mother's race, and county of residence, which we used as a proxy for mother's socioeconomic status. We will first explore each of these variables and determine which factors are relevant to birthweight, and then use the relevant factors to create and evaluate a linear regression model. We will also use M-estimation to create a more robust model. Finally, we will use cross-validation to compare our chosen linear model with the more robust version.
 
 
-```{r, message=FALSE, echo=FALSE}
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
 ## load packages
 
 library(dplyr)
@@ -278,14 +278,25 @@ ggplot(births, aes(x = MRACER)) +
 </br>
 
 0 - Other non-White
+</br>
+</br>
 1 - White
+</br>
 2 - Black or African American
+</br>
 3 - American Indian or Alaska Native
+</br>
 4 - Chinese
+</br>
 5 - Japanese
+</br>
 6 - Native Hawaiian
+</br>
 7 - Filipino
+</br>
 8 - Other Asian 
+</br>
+</br>
 
 There are significant differences between the average birth weights of mothers of different races. We see that mothers that self-identified as white have the largest mean baby weight at 3.33 kg, while black mothers have the lowest mean baby weight at only 3.07 kg. 58 percent of mothers identify as white, 24 percent identify as black, 12 percent identify as other non-white, and 3 percent identify as other asian.
 
@@ -338,12 +349,12 @@ model1 = lm(data = births_excl, BWTG ~ SEX + GEST + PARITY_truncated + PLUR_trun
 summary(model1)
 par(mfrow = c(2,2))
 plot(model1)
-plot(births_excl$GEST, model1$residuals)
-plot(births_excl$PLUR_truncated, model1$residuals)
-plot(births_excl$PARITY_truncated, model1$residuals)
-plot(births_excl$smoking_type, model1$residuals)
-plot(births_excl$MRACER, model1$residuals)
-plot(births_excl$MAGE, model1$residuals)
+plot(births_excl$GEST, model1$residuals, main = "Gestation vs Residuals")
+plot(births_excl$PLUR_truncated, model1$residuals, main = "Plurality vs Residuals")
+plot(births_excl$PARITY_truncated, model1$residuals, main = "Parity vs Residuals")
+plot(births_excl$smoking_type, model1$residuals, main = "Smoking vs Residuals")
+plot(births_excl$MRACER, model1$residuals, main = "Raace vs Residuals")
+plot(births_excl$MAGE, model1$residuals, main = "Age vs Residuals")
 ```
 </br>
 </br>
@@ -375,7 +386,7 @@ summary(model2)
 par(mfrow = c(2,2))
 plot(model2)
 # plot(model2$fitted.values, model2$residuals)
-plot(births_excl$GEST, model2$residuals)
+plot(births_excl$GEST, model2$residuals, main = "Gestation vs Residuals")
 
 ```
 </br>
@@ -389,7 +400,7 @@ summary(model3)
 par(mfrow = c(2,2))
 plot(model3)
 # plot(model3$fitted.values, model3$residuals)
-plot(births_excl$GEST, model3$residuals)
+plot(births_excl$GEST, model3$residuals, main = "Gestation vs Residuals")
 ```
 </br>
 </br>
@@ -403,7 +414,7 @@ summary(model4)
 par(mfrow = c(2,2))
 plot(model4)
 # plot(model4$fitted.values, model4$residuals)
-plot(births_excl$GEST, model4$residuals)
+plot(births_excl$GEST, model4$residuals, main = "Gestation vs Residuals")
 ```
 </br>
 </br>
@@ -417,7 +428,7 @@ summary(robust1)
 par(mfrow = c(2,2))
 plot(robust1)
 # plot(robust1$fitted.values, robust1$residuals)
-plot(births_excl$GEST, robust1$residuals)
+plot(births_excl$GEST, robust1$residuals, main = "Gestation vs Residuals")
 
 #Check weights
 robust1_weights = data.frame(bwt = births_excl$BWTG, gest = births_excl$GEST,
@@ -507,9 +518,6 @@ Since our Model 4 seemed to fit the data best, we'll report our conclusions usin
 </br>
 </br>
 Overall, the model does a good job of explaining birthweight, with our selected variables accounting for about 55% of the variation in birthweight in this sample, and each of the variables was highly predictive of birthweight.
-<<<<<<< HEAD
-
-=======
 **Sex** - On average male babies are heavier by about 125 grams, holding all else constant
 </br>
 </br>
