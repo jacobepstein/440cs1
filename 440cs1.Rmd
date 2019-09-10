@@ -324,7 +324,7 @@ ggplot(births, aes(x = mortality, y = BWTG))+
 </br>
 We chose to use infant mortality rate of birth county as a proxy for socioeconomic status, calculated as number of deaths before the age of 1 divided by total number of births in a county. The median county in the data had a infant mortality rate of 0.7%, with the range of infant mortality rates in our dataset ranging from 0.12% to 1.76%. Infant mortality rate of birth county and birth weight appear to have a weak negative linear relationship, and in isolation, a 1 percentage point increase in infant mortality rate is associated with a 157g decrease in expected birth weight.
 
-## Build Model
+## Model Building and Selection
 ```{r, fig.width=7, fig.height=5}
 births_excl = na.omit(births)
 births_excl = births_excl[which(births_excl$GEST < 80), ]
@@ -401,7 +401,7 @@ plot(births_excl$GEST, model4$residuals)
 ```
 </br>
 </br>
-The addition of the quartic term does seem to help a bit, and it seems that we've gone as far as we can go with polynomial terms on gestation. Despite this, our assumption of normality still does not appear to be totally met, as shown by tbe Q-Q plot, and the residuals are not quite homoskedastic, as the variance of the residuals increases as the fitted values gets larger. Because of this, we should look into more robust methods. For that we will utilize M-estimation.
+The addition of the quartic term does seem to help a bit, and it seems that we've gone as far as we can go with polynomial terms on gestation. Despite this, our assumption of normality still does not appear to be totally met, as shown by the Q-Q plot, and the residuals are not quite homoskedastic, as the variance of the residuals increases as the fitted values gets larger. Because of this, we should look into more robust methods. For that we will utilize M-estimation.
 
 ### Robust on Model 4
 
@@ -423,7 +423,7 @@ robust1_weights[order(robust1$w)[c(1:5, (length(robust1$w)-5):length(robust1$w))
 
 Our robust method downweights the weighting on observations with the largest residuals, as shown above. Looking at the output, it appears we still run into the same challenges as before with normality, even with this more robust approach. We will compare the approaches below by MSE, but it is evident that an even more robust approach, such as quantile regression will be useful in exploring these relationships further.
 
-## Cross Validation
+### Cross Validation of Model
 ```{r}
 births_cv<-births_excl[sample(nrow(births_excl)),]
 folds<-cut(seq(1,nrow(births_cv)),breaks=10,labels=FALSE)
@@ -489,3 +489,32 @@ results<-as.table(results_cv)
 results
 ```
 As illustrated by the table above, model4 has the lowest MSE out of all models utilised. This implies that model4 yields the least erroneous out of sample (test data) results. However, model3 has the second lowest MSE, and therefore exhibits the least amount of overfitting for a valid model.
+
+
+## Interpretations and Conclusions
+```{r}
+summary(model4)
+```
+
+Since our Model 4 seemed to fit the data best, we'll report our conclusions using this model. It's output is replicated above. 
+</br>
+</br>
+Overall, the model does a good job of explaining birthweight, with our selected variables accounting for about 55% of the variation in birthweight in this sample, and each of the variables was highly predictive of birthweight.
+* **Sex** - On average male babies are heavier by about 125 grams, holding all else constant
+* **Gestation** - Given that there is a polynomial relationship between gestation and birthweight, it is hard to interpret this relationship simply, but in general, longer gestation periods are expected to yield heavier babies.
+* **Parity** - In general, children with a higher parity, that is to say children with more older siblings, tend to be heavier than first-borns. Second-borns are expected to be 85 grams heavier than the average first born, holding all else constant. Other higher-parity children are expected to be even heavier, by about 100 grams versus a first-born.
+* **Plurality** - Twins and triplets (or more) are expected to be much lighter than single-birth babies, by about 310-320 grams.
+* **Smoking** - smoking is expected to have a negative effect on babies' birthweights. Mothers who smoked only during pregnancy are expected to have babies which are about 160 grams lighter. Mothers who smoked in the three months leading up to pregnancy as well are expected to have babies which are about 200 grams lighter. Finally, even mothers who only smoked leading up to pregnancy, but not during, also are expected to have lighter babies, but only by about 10 grams.
+* **Mother's Age** - Our model indicates a small but statistically significant positive effect of mother's age on birthweight. For every year a mother gets older, her baby is expected to be about 4 grams heavier.
+* **Race** - Race is expected to have a significant impact on birthweight. Versus the other-nonwhite category, white mothers are expected to have babies that are about 80 grams heavier. This effect varies by race, but the race which is associated with the lightest babies is Japanese, at about 115 grams lighter than the other category, and the race associated with the heaviest babies is Hawaiian, at about 200 grams heavier.
+* **Infant Mortality Rates** - We used infant mortality rates in county of birth as a proxy for socioeonomic status, which turned out to be a significant predictor of birthweight. However, it's practical impact is not very large. On average, each one additional percentage point increase in infant mortality rate of a county is associated with an increase of about 20 grams in birthweight. It is important to note that the entire range of infant mortality rates in the counties our data comes from is only about 1.5 percentage points, so the practical impact of infant mortality rates on birthweight is not large.
+
+
+
+
+
+
+
+
+
+
