@@ -12,11 +12,12 @@ output:
 
 ## Introduction
 
-In this report, we will be investigating the relationship between birthweight and various factors. The data we will be analyzing includes children born in North Carolina between 2011 and 2016, totaling 720 thousand observations. In addition to birthweight, this data includes factors such as sex, gestation period, smoking behavior, mother's race, and county of residence, which we used as a proxy for mother's socioeconomic status. We will first explore each of these variables and determine which factors are relevant to birthweight, then use the relevant factors to create and evaluate a linear regression model. We will also use M-estimation to create a more robust model. Finally, we will use cross-validation to compare our chosen linear model with the more robust version.
+In this report, we will be investigating the relationship between birthweight and various factors. The data we will be analyzing includes children born in North Carolina between 2011 and 2016, totaling 720,000 observations. In addition to birthweight, this data includes factors such as sex, gestation period, smoking behavior, mother's race, and county of residence, which we used as a proxy for mother's socioeconomic status. We will first explore each of these variables and determine which factors are relevant to birthweight, and then use the relevant factors to create and evaluate a linear regression model. We will also use M-estimation to create a more robust model. Finally, we will use cross-validation to compare our chosen linear model with the more robust version.
 
 
 ```{r, message=FALSE, echo=FALSE}
 ## load packages
+
 library(dplyr)
 library(ggplot2)
 library(MASS)
@@ -57,7 +58,7 @@ ggplot(births, aes(x= BWTG))+
 </br>
 </br>
 </br>
-Birthweight is close to normally distrubted, with a slight left skew, centered around ~3300g with a standard deviation of 600g. There appear to be no large outliers in terms of birthweight. 430 birth weights are missing. We see that the left tail is much larger than we would expect in a normal distribution. We'll keep this in mind when evaluating the assumptions of linear regression.
+Birthweight is close to normally distrubted, with a slight left skew, centered around ~3,300g with a standard deviation of 600g. There appear to be no large outliers in terms of birthweight. 430 birth weights are missing. We see that the left tail is much larger than we would expect in a normal distribution. We'll keep this in mind when evaluating the assumptions of linear regression.
 
 ### Sex
 
@@ -130,7 +131,7 @@ ggplot(births, aes(x= smoking_type, y = BWTG)) +
 ```
 </br>
 </br>
-Because the average cigarette consumption in our data varied quite a bit, and because this data was likely self-reported, we chose to simplify our analysis on smoking, and chose to turn smoking into a categorical variable, with mothers classified as either non-smokers, those who only smoked before pregnancy, those who smoked during but not before pregnancy, and those who smoked throughout.
+Because the average cigarette consumption in our data varied quite a bit, and because this data was likely self-reported, we chose to simplify our analysis on smoking and chose to turn smoking into a categorical variable, with mothers classified as either 1) non-smokers, 2) those who only smoked before pregnancy, 3) those who smoked during but not before pregnancy, and 4) those who smoked throughout.
 </br>
 </br>
 Around 13% of women smoked in the three months leading up to pregnancy and around 10% of women smoked at any point during their pregnancy. Among those who did smoke during pregnancy, the average number of cigarettes smoked during pregnancy was 23. The birthweight of children of mothers who smoked before and during pregnancy was significantly lower than that of the children of nonsmokers, with an average difference of about 200 grams. There is also a significant relationship between birthweight and smoking before pregnancy, even for those who did not smoke during pregnancy.
@@ -169,7 +170,7 @@ ggplot(data = births, mapping = aes(x = PARITY_truncated, y = BWTG)) +
 ```
 </br>
 </br>
-Independent of other variables, we see a negative relationship between parity and birth weight past the first child. The frequency of parity decreases in an exponential fashion. A second variable was created that truncates parities of at least five to improve interprability and prevent overfitting. The quantity of missing data is relatively small.
+Independent of other variables, we see a negative relationship between parity and birth weight past the first child. The frequency of parity decreases in an exponential fashion. A second variable was created that truncates parities of at least five to improve interprability and prevent overfitting. The quantity of missing data is relatively small, as there are very few instances of mothers having more than 5 children.
 
 ### Plurality
 
@@ -211,7 +212,7 @@ ggplot(births, aes(x = PLUR_truncated)) +
 ```
 </br>
 </br>
-We see a strong non linear negative relationship between plurality and birth weight. The frequency of pluralities above two is extremely small, and we again see a proportionally small amount of missing data. A second variable was created that truncates pluralities of at least three to improve interprability and prevent overfitting. 
+We see a strong non-linear negative relationship between plurality and birth weight. The frequency of pluralities above two is extremely small, and we again see a proportionally small amount of missing data (very few mothers have triplets or more). A second variable was created that truncates pluralities of at least three to improve interprability and prevent overfitting. 
 
 ### Gestation
 
@@ -232,7 +233,7 @@ ggplot(births, aes(x = GEST)) +
 ```
 </br>
 </br>
-There appears to be a non linear positive relationship between gestation period and birth weight. The mean gestational period is approximately 38.5 weeks and the period with the highest median weight is 42 weeks. The frequency distribution is left skewed with the majority of babies having a gestational period between 38 and 40 weeks. There is some concern that more extreme gestational periods may lead to higher variance, and it should be noted that there is a chunk of data points with gestational periods of 17 to 21 weeks that have much higher than expected birth weights. There is an extreme outlier with gestational age of 83 weeks. Given that this data point was probably incorrectly recorded, we will exclude it from our analysis when building the model.
+There appears to be a non-linear positive relationship between gestation period and birth weight. The mean gestational period is approximately 38.5 weeks and the period with the highest median weight is 42 weeks. The frequency distribution is left skewed with the majority of babies having a gestational period between 38 and 40 weeks. There is some concern that more extreme gestational periods may lead to higher variance, and it should be noted that there is a chunk of data points with gestational periods of 17 to 21 weeks that have much higher than expected birth weights. There is an extreme outlier with gestational age of 83 weeks. Given that this data point was probably incorrectly recorded (it is biologically nearly impossible for a human to gestate for 83 weeks), we will exclude it from our analysis when building the model.
 
 ### Age of Mother
 
@@ -255,7 +256,7 @@ ggplot(births, aes(x = MAGE)) +
 ```
 </br>
 </br>
-Mother's age seems to be fairly normally distributed with a mean of 27.7. There appears to be a positive relationship between the age of the mother and the birth weight. There is no evidence to suggest that the birth weight variance is not constant across the mother's age.
+Mother's age seems to be fairly normally distributed with a mean of 27.7, with a slightly shorter left tail. There appears to be a positive relationship between the age of the mother and the birth weight. There is no evidence to suggest that the birth weight variance is not constant across the mother's age.
 
 ### Race of Mother
 
@@ -286,7 +287,7 @@ ggplot(births, aes(x = MRACER)) +
 7 - Filipino
 8 - Other Asian 
 
-There are significant differences between the average birth weights of mother's of different races. We see that mother's that self identified as white have the largest mean baby weight at 3.33 kg, while black mother's have the lowest mean baby weight at only 3.07 kg. 58 percent of mother's identify as white, 24 percent identify as black, 12 percent identify as other non-white, and 3 percent identify as other asian.
+There are significant differences between the average birth weights of mothers of different races. We see that mothers that self-identified as white have the largest mean baby weight at 3.33 kg, while black mothers have the lowest mean baby weight at only 3.07 kg. 58 percent of mothers identify as white, 24 percent identify as black, 12 percent identify as other non-white, and 3 percent identify as other asian.
 
 ### County / Socioeconomic Status
 ```{r, echo=FALSE, message=FALSE, fig.width=5, fig.height=2.5}
@@ -347,7 +348,7 @@ plot(births_excl$MAGE, model1$residuals)
 
 In building the model, we chose to drop the point at 80 weeks of gestation, which is likely an outlier that has no reason to be there, as no human can possibly gestate for 80 weeks (~1.54 years). Additionally, we dropped all rows with missing data, as the quality of that data may be questionable. We chose to include all factors we explored earlier into this model, and found each of the factors to be statistically significant predictors of birthweight.
 
-The residuals vs fitted values and residuals vs gestational period plot slope downwards, indicating that there is a departure from linearity. More precisely, the linear model underpredicts when gestational period is below ~30 and overpredicts when gestational period is above ~30. A transformation may be helpful. The model may improve if a square term is added for gestation. Furthermore, the Q-Q plot indicates a departure from normality, likely as a result of the left skew of birthweight. We will keep this in mind as we make improvements to this initial model.
+The residuals vs fitted values and residuals vs gestational period plot slope downwards, indicating that there is a departure from linearity. A transformation may be helpful. The model may improve if a square term is added for gestation. Furthermore, the Q-Q plot indicates a departure from normality, likely as a result of the left skew of birthweight. We will keep this in mind as we make improvements to this initial model.
 </br>
 </br>
 The residual graph for Plurality (truncated) has decreasing residuals (in terms of absolute value) as plurality increases. This makes sense, as birth weight should get smaller (and as a result range of birth weights should get tighter, leading to smaller absolute value residuals) as more babies share a womb and share nutrients -- More sharing will biologically cause them to come out smaller.
@@ -421,7 +422,7 @@ robust1_weights[order(robust1$w)[c(1:5, (length(robust1$w)-5):length(robust1$w))
 </br>
 </br>
 
-Our robust method downweights the weighting on observations with the largest residuals, as shown above. Looking at the output, it appears we still run into the same challenges as before with normality, even with this more robust approach. We will compare the approaches below by MSE, but it is evident that an even more robust approach, such as quantile regression will be useful in exploring these relationships further.
+Our robust method downweights the weighting on observations with the largest residuals, as shown above. Looking at the output, it appears we still run into the same challenges as before with normality, even with this more robust approach. We will compare the approaches below by MSE using cross validation and splitting the data into test and training sets, but it is evident that an even more robust approach, such as quantile regression will be useful in exploring these relationships further.
 
 ### Cross Validation of Model
 ```{r}
@@ -500,7 +501,7 @@ Since our Model 4 seemed to fit the data best, we'll report our conclusions usin
 </br>
 </br>
 Overall, the model does a good job of explaining birthweight, with our selected variables accounting for about 55% of the variation in birthweight in this sample, and each of the variables was highly predictive of birthweight.
-* **Sex** - On average male babies are heavier by about 125 grams, holding all else constant
+* **Sex** - On average male babies are heavier by about 125 grams, holding all else constant.
 * **Gestation** - Given that there is a polynomial relationship between gestation and birthweight, it is hard to interpret this relationship simply, but in general, longer gestation periods are expected to yield heavier babies.
 * **Parity** - In general, children with a higher parity, that is to say children with more older siblings, tend to be heavier than first-borns. Second-borns are expected to be 85 grams heavier than the average first born, holding all else constant. Other higher-parity children are expected to be even heavier, by about 100 grams versus a first-born.
 * **Plurality** - Twins and triplets (or more) are expected to be much lighter than single-birth babies, by about 310-320 grams.
