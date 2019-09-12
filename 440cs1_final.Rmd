@@ -99,12 +99,36 @@ if (!file.exists("births.rds")){
 
 ## Exploratory Data Analysis
 
-[add selected EDA]
+[TODO: add selected EDA]
+
 Mention transformations:
 * truncating plurality and parity
 * consolodating races
 * make smoking categorical and rationale
 
+Additions from Interim Report
+* multicolinearity
+* interactions?
+
+
+## Model Selection and Validation
+
+[TODO: add model selection and validation]
+
+* condense from interim, maybe only include final model
+* dont use R output, make table instead
+
+## Quantile Regression
+
+[TODO: do quantile regression]
+
+* Main focus: how does smoking effect vary based on birthweight
+
+
+## Interpretations and Conclusions
+
+
+[TODO: add interpretation and conclusions]
 
 
 
