@@ -352,7 +352,7 @@ plot(births_excl$GEST, model1$residuals, main = "Gestation vs Residuals")
 plot(births_excl$PLUR_truncated, model1$residuals, main = "Plurality vs Residuals")
 plot(births_excl$PARITY_truncated, model1$residuals, main = "Parity vs Residuals")
 plot(births_excl$smoking_type, model1$residuals, main = "Smoking vs Residuals")
-plot(births_excl$MRACER, model1$residuals, main = "Raace vs Residuals")
+plot(births_excl$MRACER, model1$residuals, main = "Race vs Residuals")
 plot(births_excl$MAGE, model1$residuals, main = "Age vs Residuals")
 ```
 </br>
