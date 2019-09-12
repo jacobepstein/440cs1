@@ -8,7 +8,7 @@ output: html_document
 
 ## Introduction
 
-[add intro text]
+[TODO: add intro text]
 
 ```{r, message=FALSE, echo=FALSE, warning=FALSE}
 ## load packages
@@ -115,7 +115,8 @@ Additions from Interim Report
 
 [TODO: add model selection and validation]
 
-* condense from interim, maybe only include final model
+* condense from interim
+* maybe only include final model?
 * dont use R output, make table instead
 
 ## Quantile Regression
