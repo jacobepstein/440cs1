@@ -300,8 +300,8 @@ births_excl = births_excl[which(births_excl$GEST < 80), ]
 births_excl = births_excl %>%
   mutate(GEST2 = GEST^2, GEST3 = GEST ^ 3, GEST4 = GEST^4)
 
-
-model1 = lm(data = births_excl, BWTG ~ SEX + GEST + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+#logging BWTG is really bad for the QQ plot
+model1 = lm(data = births_excl, BWTG ~ SEX + GEST + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality + MRACER:smoking_type, na.action = "na.exclude")
 summary(model1)
 par(mfrow = c(2,2))
 plot(model1)
@@ -330,7 +330,7 @@ Cubic: After adding a cubic term to gestation, the residual vs gestational perio
 
 ## Model 4: Adding Higher Order Terms to Gestation
 ```{r, fig.width=7, fig.height=5}
-model4 = lm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+model4 = lm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality + MRACER:smoking_type, na.action = "na.exclude")
 summary(model4)
 par(mfrow = c(2,2))
 plot(model4)
@@ -342,7 +342,7 @@ Quartic: The addition of the quartic term does seem to help a bit, and it seems 
 ### Robust on Model 4
 
 ```{r, fig.width=7, fig.height=5}
-robust1 <- rlm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality, na.action = "na.exclude")
+robust1 <- rlm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality + MRACER:smoking_type, na.action = "na.exclude")
 summary(robust1)
 par(mfrow = c(2,2))
 plot(robust1)
@@ -439,7 +439,17 @@ We prefer using these MSE scores over the in-sample results reported in our init
 
 * Main focus: how does smoking effect vary based on birthweight
 
+```{r}
+library(quantreg)
+births_excl_sub <- births_excl[sample(1:nrow(births_excl), nrow(births_excl)/2,
+   replace=FALSE),]
+attach(births_excl_sub)
+qr=rq(BWTG~smoking_type,tau=c(.05,.1,.25,0.5, .75,.90,.95))
+sumqr= summary(qr)
+plot(sumqr)
 
+
+```
 
 
 ## Interpretations and Conclusions
