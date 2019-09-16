@@ -322,15 +322,25 @@ The residual graph for Smoking has higher residuals for no smoking than for smok
 
 The GVIF outputs also do not indicate that there is multicollinearity.
 
+###Next Steps
+
+#### Interaction Effects
+To explore interaction effects, we explored potential interactions that had logical bases in reality -- meaning that there was evidence in our daily experiences and background knowledge to suggest that an interaction may exist. We explored interactions between 1) race and mortality (race may be correlated with socioeconomic status which may be correlated with mortality), 2) race and smoking (race may be correlated with cultural norms which may be correlated with smoking habits) 3) race and parity (race may be correlated with socioeconomic status which may be correlated with number of children), and 4) race and age (may be correlated with cultural norms which may be correlated with age at which one has kids).
+
+After running a regression exploring all those interactions listed above, it turned out that race and mortality had significant interaction effects on birth weight.
+
+
+#### Higher Order Terms
 For next steps, we explored adding higher order terms for gestation onto our model.
 
 Quadratic: While adding a quadratic term was statistically significant, the new model still displayed the original downwards trend in the residual vs gestational period graph. The other residuals plots also retain their trends from model 1.
 
 Cubic: After adding a cubic term to gestation, the residual vs gestational period shows a much more random pattern than before and the cubic term is statistically significant. The other residuals plots also retain their trends from model 1.
 
-## Model 4: Adding Higher Order Terms to Gestation
+
+### Model 4: Adding Higher Order Terms to Gestation
 ```{r, fig.width=7, fig.height=5}
-model4 = lm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality + MRACER:smoking_type, na.action = "na.exclude")
+model4 = lm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality, na.action = "na.exclude")
 summary(model4)
 par(mfrow = c(2,2))
 plot(model4)
@@ -342,7 +352,7 @@ Quartic: The addition of the quartic term does seem to help a bit, and it seems 
 ### Robust on Model 4
 
 ```{r, fig.width=7, fig.height=5}
-robust1 <- rlm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality + MRACER:smoking_type, na.action = "na.exclude")
+robust1 <- rlm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality, na.action = "na.exclude")
 summary(robust1)
 par(mfrow = c(2,2))
 plot(robust1)
@@ -385,7 +395,7 @@ test_mse<-c(mean(model1_test_mse))
 #Train and test model2
 model2_test_mse<-c()
 for(i in 1:10){
-  model2_train<-lm(data=train_list[[i]],BWTG~SEX+GEST+GEST2+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
+  model2_train<-lm(data=train_list[[i]],BWTG ~ SEX + GEST + GEST2 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality,na.action="na.exclude")
   model2_test<-predict(model2_train,train_list[[i]])
   model2_test_mse[[i]]<-mean((train_list[[i]]$BWTG-model2_test)^2)
 }
@@ -394,7 +404,7 @@ test_mse<-append(test_mse, mean(model2_test_mse))
 #Train and test model3
 model3_test_mse<-c()
 for(i in 1:10){
-  model3_train<-lm(data=train_list[[i]],BWTG~SEX+GEST+GEST2+GEST3+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
+  model3_train<-lm(data=train_list[[i]],BWTG ~ SEX + GEST + GEST2 + GEST3 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality,na.action="na.exclude")
   model3_test<-predict(model3_train,train_list[[i]])
   model3_test_mse[[i]]<-mean((train_list[[i]]$BWTG-model3_test)^2)
 }
@@ -403,7 +413,7 @@ test_mse<-append(test_mse, mean(model3_test_mse))
 #Train and test model4
 model4_test_mse<-c()
 for(i in 1:10){
-  model4_train<-lm(data=train_list[[i]],BWTG~SEX+GEST+GEST2+GEST3+GEST4+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
+  model4_train<-lm(data=train_list[[i]],BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality,na.action="na.exclude")
   model4_test<-predict(model4_train,train_list[[i]])
   model4_test_mse[[i]]<-mean((train_list[[i]]$BWTG-model4_test)^2)
 }
@@ -411,11 +421,19 @@ test_mse<-append(test_mse, mean(model4_test_mse))
 
 robust1_test_mse<-c()
 for(i in 1:10){
-  robust1_train<-rlm(data=train_list[[i]],BWTG~SEX+GEST+GEST2+GEST3+GEST4+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
+  robust1_train<-rlm(data=train_list[[i]],BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality,na.action="na.exclude")
   robust1_test<-predict(robust1_train,train_list[[i]])
   robust1_test_mse[[i]]<-mean((train_list[[i]]$BWTG-robust1_test)^2)
 }
 test_mse<-append(test_mse, mean(robust1_test_mse))
+
+# qrmed_test_mse<-c()
+# for(i in 1:10){
+#   qrmed_train<-rq(data=train_list[[i]],BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality, tau = 0.5)
+#   qrmed_test<-predict(qrmed_train,train_list[[i]])
+#   qrmed_test_mse[[i]]<-mean((train_list[[i]]$BWTG-qrmed_test)^2)
+# }
+# test_mse<-append(test_mse, mean(qrmed_test_mse))
 
 #Results
 results_cv<-matrix(test_mse,ncol=5)
@@ -430,9 +448,6 @@ We prefer using these MSE scores over the in-sample results reported in our init
 
 
 
-
-
-
 ## Quantile Regression
 
 [TODO: do quantile regression]
@@ -441,12 +456,15 @@ We prefer using these MSE scores over the in-sample results reported in our init
 
 ```{r}
 library(quantreg)
-births_excl_sub <- births_excl[sample(1:nrow(births_excl), nrow(births_excl)/2,
+set.seed(123)
+births_excl_sub <- births_excl[sample(1:nrow(births_excl), nrow(births_excl)/10,
    replace=FALSE),]
+
 attach(births_excl_sub)
-qr=rq(BWTG~smoking_type,tau=c(.05,.1,.25,0.5, .75,.90,.95))
+qr=rq(BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality ,tau=c(.05,.25,0.5, .75,.95))
 sumqr= summary(qr)
-plot(sumqr)
+sumqr
+
 
 
 ```
@@ -454,7 +472,18 @@ plot(sumqr)
 
 ## Interpretations and Conclusions
 
-
+### Model Coefficients
+```{r}
+qregmat<-matrix(c(
+  c(-11.5,-23.2,-20.2,-2.7,5.8, 54.9), 
+  c(-115.3,-193.4,-122.1,-104.5,-110.9, -45.93),
+  c(-203.4, -200.9, -207.8, -198.1, -187.0, -169.5)),
+  ncol=3)
+colnames(qregmat)<-c('Smoking: before','Smoking: during','Smoking: before & during')
+rownames(qregmat)<-c('LR Model4', 'QR 0.05', 'QR 0.25', 'QR 0.5', 'QR 0.75', 'QR 0.95')
+qreg<-as.table(qregmat)
+qreg
+```
 [TODO: add interpretation and conclusions]
 
 
