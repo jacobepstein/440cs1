@@ -1,7 +1,7 @@
 ---
-title: "440cs1_final"
-author: "Jake Epstein"
-date: "9/12/2019"
+title: "440 Case Study 1"
+author: "Group 8: Jake Epstein, Daniel Spottiswood, Michael Tan, Sahil Patel, Man-Lin Hsiao"
+date: "9/17/2019"
 output: html_document
 ---
 
@@ -12,7 +12,7 @@ Birth weight is a commonly-used indicator of a newborn infant’s health status.
 
 The goals of this case study are as follows: 
 1) determining which factors are associated with birth weight 
-2) characterizing the relationship between each factor and birth weight 
+2) modeling the relationship between each factor and birth weight 
 3) exploring whether fit of linear regression model is adequate or whether robust regression methods are needed 
 4) estimating the impact of eliminating maternal smoking on birth weight
 
@@ -113,7 +113,7 @@ Additions from Interim Report
 ]
 
 
-For data cleaning, we chose to: (1) make smoking a categorical variable, (2) truncate the variables plurality and (3) parity, and (4) consolidate the race variable.
+For data cleaning and processing, we chose to: (1) make smoking a categorical variable, (2) truncate the variables plurality and (3) parity, (4) consolidate the race variable, and (5) calculate infant mortality for each county.
 
 ### Smoking
 Because the average cigarette consumption in our data varied quite a bit, and because this data was likely self-reported, we chose to simplify our analysis on smoking and turn smoking into a categorical variable.
@@ -244,7 +244,7 @@ ggplot(data = births, mapping = aes(x = PARITY_truncated, y = BWTG)) +
 ```
 </br>
 </br>
-Independent of other variables, we see a negative relationship between parity and birth weight past the first child. The frequency of parity decreases in an exponential fashion. A second variable was created that truncates parities of at least five to improve interprability and prevent overfitting. The quantity of missing data is relatively small, as there are very few instances of mothers having more than 5 children.
+Independent of other variables, we see a negative relationship between parity and birth weight past the first child. The frequency of parity decreases in an exponential fashion. A second variable was created that truncates parities of at least five to improve interprability and prevent overfitting.
 
 ### Race of Mother
 
@@ -265,7 +265,7 @@ ggplot(births, aes(x = MRACER)) +
 </br>
 </br>
 
-There are significant differences between the average birth weights of mothers of different races. We see that mothers that self-identified as white have the largest mean baby weight at 3.33 kg, while black mothers have the lowest mean baby weight at only 3.07 kg. 58 percent of mothers identify as white, 24 percent identify as black, 12 percent identify as other non-white, and 3 percent identify as other asian.
+There are significant differences between the average birth weights of mothers of different races. We see that mothers that self-identified as white have the largest mean baby weight at 3.34 kg, while black mothers have the lowest mean baby weight at only 3.07 kg. 56 percent of mothers identify as white, 24 percent identify as black, 15 percent identify as hispanic, and 4 percent identify as asian.
 
 ### EDA on Birth Weight 
 ```{r, echo=FALSE, message=FALSE, fig.width=5, fig.height=2.5}
@@ -278,7 +278,7 @@ ggplot(births, aes(x= BWTG))+
 </br>
 </br>
 </br>
-Birthweight is close to normally distrubted, with a slight left skew, centered around ~3,300g with a standard deviation of 600g. There appear to be no large outliers in terms of birthweight. 430 birth weights are missing. We see that the left tail is much larger than we would expect in a normal distribution. We'll keep this in mind when evaluating the assumptions of linear regression.
+Birthweight is close to normally distributed, with a slight left skew, centered around ~3,300g with a standard deviation of 600g. There appear to be no large outliers in terms of birthweight. 430 birth weights are missing. We see that the left tail is much larger than we would expect in a normal distribution. We'll keep this in mind when evaluating the assumptions of linear regression.
 
 
 
@@ -325,9 +325,9 @@ The GVIF outputs also do not indicate that there is multicollinearity.
 ###Next Steps
 
 #### Interaction Effects
-To explore interaction effects, we explored potential interactions that had logical bases in reality -- meaning that there was evidence in our daily experiences and background knowledge to suggest that an interaction may exist. We explored interactions between 1) race and mortality (race may be correlated with socioeconomic status which may be correlated with mortality), 2) race and smoking (race may be correlated with cultural norms which may be correlated with smoking habits) 3) race and parity (race may be correlated with socioeconomic status which may be correlated with number of children), and 4) race and age (may be correlated with cultural norms which may be correlated with age at which one has kids).
+To explore interaction effects, we explored potential interactions that had logical bases in reality -- meaning that there was evidence in our daily experiences and background knowledge to suggest that an interaction may exist. We explored interactions between 1) race and county infant mortality (race may be correlated with socioeconomic status which may be correlated with mortality), 2) race and smoking (race may be correlated with cultural norms which may be correlated with smoking habits) 3) race and parity (race may be correlated with socioeconomic status which may be correlated with number of children), and 4) race and age (may be correlated with cultural norms which may be correlated with age at which one has kids).
 
-After running a regression exploring all those interactions listed above, it turned out that race and mortality had significant interaction effects on birth weight.
+After running a regression exploring all those interactions listed above, we found that race and county infant mortality had significant interaction effects on birth weight.
 
 
 #### Higher Order Terms
@@ -346,7 +346,7 @@ par(mfrow = c(2,2))
 plot(model4)
 ```
 
-Quartic: The addition of the quartic term does seem to help a bit, and it seems that we've gone as far as we can go with polynomial terms on gestation. Despite this, our assumption of normality still does not appear to be totally met, as shown by the Q-Q plot, and the residuals are not quite homoskedastic, as the variance of the residuals increases as the fitted values gets larger. Because of this, we should look into more robust methods. For that we will utilize M-estimation.
+Quartic: The addition of the quartic term further smooths the residual plot, and it appears that additional polynomial degrees would only lead to overfitting and loss of interprability. Despite this, our assumption of normality still does not appear to be totally met, as shown by the Q-Q plot, and the residuals are not quite homoskedastic, as the variance of the residuals increases as the fitted values gets larger. Because of this, we should look into more robust methods. For that we will utilize M-estimation.
 
 
 ### Robust on Model 4
