@@ -72,15 +72,22 @@ knit_hooks$set(output = function(x, options) {
   x <- paste(c(x, ""), collapse = "\n")
   hook_output(x, options)
 })
+
 ``` 
 
 ## Introduction
 Birth weight is a commonly-used indicator of a newborn infant’s health status, tracked closely by the World Health Organization and governments.
+</br>
+</br>
 
 The goals of this case study are as follows: 
+
 1) determining which factors are associated with birth weight 
+
 2) modeling the relationship between each factor and birth weight 
+
 3) exploring whether fit of linear regression model is adequate or whether robust regression methods are needed 
+
 4) estimating the impact of eliminating maternal smoking on birth weight
 
 ```{r, message=FALSE, echo=FALSE, warning=FALSE}
@@ -174,7 +181,7 @@ For data cleaning and processing, we chose to: (1) make smoking a categorical va
 ### Smoking
 Independent of other variables, we see a negative relationship between parity and birth weight past the first child. The frequency of parity decreases in an exponential fashion. A second variable was created that truncates parities of at least five to improve interprability and prevent overfitting.
 
-```{r, echo=FALSE, message=FALSE, fig.width=7, fig.height=3.5}
+```{r, echo=FALSE, message=FALSE, fig.width=7.5, fig.height=4}
 ## SMOKING:
 births = births %>% mutate(
   CIGPN_binary = CIGPN>0,
@@ -221,22 +228,6 @@ plot2= ggplot(data = births, mapping = aes(x = PLUR_truncated, y = BWTG)) +
 births$PLUR = as.numeric(births$PLUR)
 
 
-## PLURALITY:
-births = births %>% 
-  mutate(PLUR_truncated = ifelse(PLUR > 2, "3+", PLUR))
-
-births$PLUR = as.factor(births$PLUR)
-
-births$PLUR_truncated = as.factor(births$PLUR_truncated)
-
-# PLOT THREE
-plot3= ggplot(data = births, mapping = aes(x = PLUR_truncated, y = BWTG)) +
-  geom_boxplot() + 
-  xlab("Plurality Truncated") + 
-  ylab("Birth weight (g)") + 
-  ggtitle("NC Births, 2011-2016") + 
-  theme_minimal()
-
 ## PARITY:
 
 # Check the parity frequencies
@@ -269,7 +260,7 @@ plot5= ggplot(data = births, mapping = aes(x = MRACER, y = BWTG)) +
 
 
 library(gridExtra)
-grid.arrange(plot1,plot2,plot3,plot4, plot5,layout_matrix = rbind(c(1,1,2), c(3,4,5)))
+grid.arrange(plot1,plot2,plot4, plot5,layout_matrix = rbind(c(1,2), c(3,4)))
 
 
 
@@ -287,7 +278,7 @@ Independent of other variables, we see a negative relationship between parity an
 There are significant differences between the average birth weights of mothers of different races. We see that mothers that self-identified as white have the largest mean baby weight at 3.34 kg, while black mothers have the lowest mean baby weight at only 3.07 kg. 56 percent of mothers identify as white, 24 percent identify as black, 15 percent identify as hispanic, and 4 percent identify as Asian.
 
 ### EDA on Birth Weight 
-```{r, echo=FALSE, message=FALSE, fig.width=9, fig.height=2}
+```{r, echo=FALSE, message=FALSE, fig.width=11, fig.height=2}
 #BIRTH WEIGHT
 plot6 = ggplot(births, aes(x= BWTG))+
   geom_histogram(binwidth=100, colour="black", 
@@ -315,7 +306,7 @@ There appears to be a non-linear positive relationship between gestation period 
 In building the model, we chose to drop the point at 80 weeks of gestation, which is likely an outlier that has no reason to be there, as no human can possibly gestate for 80 weeks (~1.54 years). Additionally, we dropped all rows with missing data.
 
 ### Model 1: Initial Approach
-```{r, fig.width=7, fig.height=5, message=FALSE, warning=FALSE}
+```{r, fig.width=5, fig.height=5, message=FALSE, warning=FALSE}
 births_excl = na.omit(births)
 births_excl = births_excl[which(births_excl$GEST < 80), ]
 births_excl = births_excl %>%
@@ -354,9 +345,9 @@ Cubic: After adding a cubic term to gestation, the residual vs gestational perio
 
 
 ### Model 4: Adding Higher Order Terms to Gestation
-```{r, fig.width=7, fig.height=5, output.lines=15}
+```{r, fig.width=5, fig.height=5, output.lines=15, }
 model4 = lm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality, na.action = "na.exclude")
-summary(model4)
+#summary(model4)
 par(mfrow = c(2,2))
 plot(model4)
 ```
@@ -364,21 +355,22 @@ plot(model4)
 Quartic: The addition of the quartic term further smooths the residual plot, and it appears that additional polynomial degrees would only lead to overfitting and loss of interprability. Despite this, our assumption of normality still does not appear to be totally met, as shown by the Q-Q plot, and the residuals are not quite homoskedastic, as the variance of the residuals increases as the fitted values gets larger. Because of this, we will look into utilizing M-estimation.
 
 <br>
+
 ### Robust on Model 4
-```{r, fig.width=7, fig.height=5}
+```{r, fig.width=5, fig.height=5}
 robust1 <- rlm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality, na.action = "na.exclude")
 #summary(robust1)
-par(mfrow = c(2,3))
+par(mfrow = c(2,2))
 plot(robust1)
 # plot(robust1$fitted.values, robust1$residuals)
-plot(births_excl$GEST, robust1$residuals, main = "Gestation vs Residuals")
+#plot(births_excl$GEST, robust1$residuals, main = "Gestation vs Residuals")
 ```
 
 ```{r, echo = FALSE}
 #Check weights
 robust1_weights = data.frame(bwt = births_excl$BWTG, gest = births_excl$GEST,
  resid=robust1$resid, weight=robust1$w)
-robust1_weights[order(robust1$w)[c(1:5, (length(robust1$w)-5):length(robust1$w))],]
+robust1_weights[order(robust1$w)[c(1:3, (length(robust1$w)-3):length(robust1$w))],]
 ```
 Our robust method downweights the weighting on observations with the largest residuals, as shown above. Looking at the output, it appears we still run into the same challenges as before with normality, even with this more robust approach. We will compare the approaches below by MSE using cross validation and splitting the data into test and training sets, and then we will use quantile regression to explore these relationships further.
 
@@ -489,7 +481,7 @@ qreg
 ## Interpretations and Conclusions
 
 ### Model 4
-Since our Model 4 seemed to fit the data best, we'll report our conclusions using this model. Its output is replicated above. 
+Since our Model 4 seemed to fit the data best, we'll report our conclusions using this model. 
 </br>
 
 Overall, the model does a good job of explaining birthweight, with our selected variables accounting for about 55% of the variation in birthweight in this sample, and each of the variables was highly predictive of birthweight.
