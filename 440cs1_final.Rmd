@@ -190,13 +190,15 @@ births = births %>% mutate(
   CIGLN_binary = CIGLN>0
 )
 
+births = na.omit(births)
+
 births = births %>%
   mutate(total_smoked = CIGFN+CIGSN+CIGLN) %>%
   mutate(smoked_during = total_smoked >0)
 
 births = births %>%
   mutate(smoking_type = ifelse(smoked_during, 
-      ifelse(CIGPN_binary, "before and during", "during only"),
+      ifelse(CIGPN_binary, "before + during", "during only"),
       ifelse(CIGPN_binary, "before only", "none"))) %>%
   mutate(smoking_type = relevel(as.factor(smoking_type), ref = 4))
 
@@ -248,6 +250,8 @@ plot4= ggplot(data = births, mapping = aes(x = PARITY_truncated, y = BWTG)) +
   theme_minimal()
 
 # RACE OF MOTHER:
+
+births$MRACER[births$MRACER == "Other Non-White"] = "Other"
 
 # PLOT FIVE
 births$MRACER = as.factor(births$MRACER)
@@ -527,9 +531,9 @@ Overall, the model does a good job of explaining birthweight, with our selected 
 **Quantile Regression**
 The quantile regression reveals the following:
 
-1) Only Smoking Before Pregnancy: For the lightest babies (at the 0.05 quantile), smoking only before pregnancy led to a 11.5 gram drop in birth weight. At the median,  this effect was -2.7 grams. For the largest babies, at the 95th quantile, this effect was +55.9 grams.
+1) Only Smoking Before Pregnancy: For the lightest babies (at the 0.05 quantile), smoking only before pregnancy led to a 11.5 gram drop in birth weight. At the median,  this effect was -2.7 grams. For the largest babies, at the 95th quantile, this effect was +54.9 grams.
 
-2) Only Smoking During Pregnancy: For the lightest babies (at the 0.05 quantile), smoking only during pregnancy led to a 115.3 gram drop in birth weight. At the median,  this effect was -104.5 grams. For the largest babies, at the 95th quantile, this effect was -55.9 grams.
+2) Only Smoking During Pregnancy: For the lightest babies (at the 0.05 quantile), smoking only during pregnancy led to a 115.3 gram drop in birth weight. At the median,  this effect was -104.5 grams. For the largest babies, at the 95th quantile, this effect was -45.9 grams.
 
 3) Smoking Before and During Pregnancy: For the lightest babies (at the 0.05 quantile), smoking before and during pregnancy led to a 203.4 gram drop in birth weight. At the median,  this effect was -198.1 grams. For the largest babies, at the 95th quantile, this effect was -169.4 grams.
 
