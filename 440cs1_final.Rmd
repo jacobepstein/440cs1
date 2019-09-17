@@ -374,7 +374,7 @@ robust1_weights[order(robust1$w)[c(1:3, (length(robust1$w)-3):length(robust1$w))
 ```
 Our robust method downweights the weighting on observations with the largest residuals, as shown above. Looking at the output, it appears we still run into the same challenges as before with normality, even with this more robust approach. We will compare the approaches below by MSE using cross validation and splitting the data into test and training sets, and then we will use quantile regression to explore these relationships further.
 
-## Cross Validation of Model
+### Cross Validation of Model
 ```{r}
 births_cv<-births_excl[sample(nrow(births_excl)),]
 folds<-cut(seq(1,nrow(births_cv)),breaks=10,labels=FALSE)
@@ -389,67 +389,76 @@ for(i in 1:10){
 }
 
 #Train and test model1
-model1_test_mse<-c()
+model1_test_mse=c()
+model1_test_mae=c()
 for(i in 1:10){
-  model1_train<-lm(data=train_list[[i]],BWTG~SEX+GEST+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
-  model1_test<-predict(model1_train,train_list[[i]])
-  model1_test_mse[[i]]<-(mean((train_list[[i]]$BWTG-model1_test)^2))
+  model1_train=lm(data=train_list[[i]],BWTG~SEX+GEST+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
+  model1_test=predict(model1_train,test_list[[i]])
+  model1_test_mse[[i]]=(mean((test_list[[i]]$BWTG-model1_test)^2))
+  model1_test_mae[[i]]=mean(abs(test_list[[i]]$BWTG-model1_test))
 }
-test_mse<-c(mean(model1_test_mse))
+test_mse=c(mean(model1_test_mse))
+test_mae=c(mean(model1_test_mae))
 
 #Train and test model2
-model2_test_mse<-c()
+model2_test_mse=c()
+model2_test_mae=c()
 for(i in 1:10){
-  model2_train<-lm(data=train_list[[i]],BWTG ~ SEX + GEST + GEST2 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality,na.action="na.exclude")
-  model2_test<-predict(model2_train,train_list[[i]])
-  model2_test_mse[[i]]<-mean((train_list[[i]]$BWTG-model2_test)^2)
+  model2_train=lm(data=train_list[[i]],BWTG~SEX+GEST+GEST2+GEST3+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality+MRACER:mortality,na.action="na.exclude")
+  model2_test=predict(model2_train,test_list[[i]])
+  model2_test_mse[[i]]=mean((test_list[[i]]$BWTG-model2_test)^2)
+  model2_test_mae[[i]]=mean(abs(test_list[[i]]$BWTG-model2_test))
 }
-test_mse<-append(test_mse, mean(model2_test_mse))
+test_mse=append(test_mse,mean(model2_test_mse))
+test_mae=append(test_mae,mean(model2_test_mae))
+
 
 #Train and test model3
-model3_test_mse<-c()
+model3_test_mse=c()
+model3_test_mae=c()
 for(i in 1:10){
-  model3_train<-lm(data=train_list[[i]],BWTG ~ SEX + GEST + GEST2 + GEST3 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality,na.action="na.exclude")
-  model3_test<-predict(model3_train,train_list[[i]])
-  model3_test_mse[[i]]<-mean((train_list[[i]]$BWTG-model3_test)^2)
+  model3_train=lm(data=train_list[[i]],BWTG~SEX+GEST+GEST2+GEST3+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality+MRACER:mortality,na.action="na.exclude")
+  model3_test=predict(model3_train,test_list[[i]])
+  model3_test_mse[[i]]=mean((test_list[[i]]$BWTG-model3_test)^2)
+  model3_test_mae[[i]]=mean(abs(test_list[[i]]$BWTG-model3_test))
 }
-test_mse<-append(test_mse, mean(model3_test_mse))
+test_mse=append(test_mse,mean(model3_test_mse))
+test_mae=append(test_mae,mean(model3_test_mae))
 
 #Train and test model4
-model4_test_mse<-c()
+model4_test_mse=c()
+model4_test_mae=c()
 for(i in 1:10){
-  model4_train<-lm(data=train_list[[i]],BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality,na.action="na.exclude")
-  model4_test<-predict(model4_train,train_list[[i]])
-  model4_test_mse[[i]]<-mean((train_list[[i]]$BWTG-model4_test)^2)
+  model4_train=lm(data=train_list[[i]],BWTG~SEX+GEST+GEST2+GEST3+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality+MRACER:mortality,na.action="na.exclude")
+  model4_test=predict(model4_train,test_list[[i]])
+  model4_test_mse[[i]]=mean((test_list[[i]]$BWTG-model4_test)^2)
+  model4_test_mae[[i]]=mean(abs(test_list[[i]]$BWTG-model4_test))
 }
-test_mse<-append(test_mse, mean(model4_test_mse))
+test_mse=append(test_mse,mean(model4_test_mse))
+test_mae=append(test_mae,mean(model4_test_mae))
 
-robust1_test_mse<-c()
+#Train and test robust1
+robust1_test_mse=c()
+robust1_test_mae=c()
 for(i in 1:10){
-  robust1_train<-rlm(data=train_list[[i]],BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality,na.action="na.exclude")
-  robust1_test<-predict(robust1_train,train_list[[i]])
-  robust1_test_mse[[i]]<-mean((train_list[[i]]$BWTG-robust1_test)^2)
+  robust1_train=lm(data=train_list[[i]],BWTG~SEX+GEST+GEST2+GEST3+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality+MRACER:mortality,na.action="na.exclude")
+  robust1_test=predict(robust1_train,test_list[[i]])
+  robust1_test_mse[[i]]=mean((test_list[[i]]$BWTG-robust1_test)^2)
+  robust1_test_mae[[i]]=mean(abs(test_list[[i]]$BWTG-robust1_test))
 }
-test_mse<-append(test_mse, mean(robust1_test_mse))
+test_mse=append(test_mse,mean(robust1_test_mse))
+test_mae=append(test_mae,mean(robust1_test_mae))
 
-# qrmed_test_mse<-c()
-# for(i in 1:10){
-#   qrmed_train<-rq(data=train_list[[i]],BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality, tau = 0.5)
-#   qrmed_test<-predict(qrmed_train,train_list[[i]])
-#   qrmed_test_mse[[i]]<-mean((train_list[[i]]$BWTG-qrmed_test)^2)
-# }
-# test_mse<-append(test_mse, mean(qrmed_test_mse))
-
-#Results
-results_cv<-matrix(test_mse,ncol=5)
-colnames(results_cv)<-c('model1','model2','model3','model4','robust1')
-rownames(results_cv)<-c('Average MSE')
-results<-as.table(results_cv)
-results
+#MSE Results
+results_mse=matrix(test_mse,ncol=5)
+colnames(results_mse)=c('model1','model2','model3','model4','robust1')
+rownames(results_mse)=c('Average MSE')
+mse_results=as.table(results_mse)
+mse_results
 ```
-We employed K-fold cross-validation to test the models on their ability to accurately predict. Following the technique, we shuffled the data to randomize the sample, and then partitioned the data into K=10 folds (groups). We used the 10 folds to form 10 pairs of test and training sets; every test set is composed a differnet fold of the 10 total folds, and each training set is the remaining nine folds combined. We used the training sets to produce the estimates from the model, and use the test sets to produce an error score, the MSE. We averaged the 10 MSEs for all for 5 the models we developed and used this output as our metric of comparison.
+We employed K-fold cross-validation to test the models on their ability to accurately predict. Following the technique, we shuffled the data to randomize the sample, and then partitioned the data into K=10 folds (groups). We used the 10 folds to form 10 pairs of test and training sets; every test set is composed a different fold of the 10 total folds, and each training set is the remaining nine folds combined. We used the training sets to produce the estimates from the model, and use the test sets to produce an error score, the MSE. We averaged the 10 MSEs for all 5 of the models we developed, and used this output as our metric of comparison. We prefer using these MSE scores over the in-sample results reported in our initial model estimates. Using cross validation allows us to mitigate the adverse effects of overfitting our model by adding more covariates. 
 
-We prefer using these MSE scores over the in-sample results reported in our initial model estimates. Using cross validation allows us to mitigate the adverse effects of overfitting our model by adding more covariates. As illustrated by the table above, model4 has the lowest MSE out of all models utilised. This implies that model4 yields the least erroneous out of sample (test data) results, and thus indicates the least amount of overfitting. Notably, the robust model had the second lowest MSE. The robust model reduces the influence of outlying data, therefore we will consider also solving for the MAE across our models as it may increase the interpretability of the robust error. This indicates that by attempting to reduce the influence of outlying data in our model, we may have begun to overfit the data.
+As illustrated by the table above, model4 has the lowest MSE out of all models utilised. This implies that model4 yields the least erroneous out of sample (test data) results, and thus indicates the least amount of overfitting. Nonetheless, MSE is decreasing across our models as we increase the number of covariates and the MSE produced by cross-validation of model4 is not substantially lower than the lower-degree models. This indicates that by attempting to reduce the influence of outlying data in our model, we may have begun to overfit the data.
 
 ## Quantile Regression
 * Main focus: how does smoking effect vary based on birthweight?
