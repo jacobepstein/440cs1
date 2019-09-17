@@ -394,64 +394,49 @@ for(i in 1:10){
 
 #Train and test model1
 model1_test_mse=c()
-model1_test_mae=c()
 for(i in 1:10){
   model1_train=lm(data=train_list[[i]],BWTG~SEX+GEST+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality,na.action="na.exclude")
   model1_test=predict(model1_train,test_list[[i]])
   model1_test_mse[[i]]=(mean((test_list[[i]]$BWTG-model1_test)^2))
-  model1_test_mae[[i]]=mean(abs(test_list[[i]]$BWTG-model1_test))
 }
 test_mse=c(mean(model1_test_mse))
-test_mae=c(mean(model1_test_mae))
 
 #Train and test model2
 model2_test_mse=c()
-model2_test_mae=c()
 for(i in 1:10){
   model2_train=lm(data=train_list[[i]],BWTG~SEX+GEST+GEST2+GEST3+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality+MRACER:mortality,na.action="na.exclude")
   model2_test=predict(model2_train,test_list[[i]])
   model2_test_mse[[i]]=mean((test_list[[i]]$BWTG-model2_test)^2)
-  model2_test_mae[[i]]=mean(abs(test_list[[i]]$BWTG-model2_test))
 }
 test_mse=append(test_mse,mean(model2_test_mse))
-test_mae=append(test_mae,mean(model2_test_mae))
 
 
 #Train and test model3
 model3_test_mse=c()
-model3_test_mae=c()
 for(i in 1:10){
   model3_train=lm(data=train_list[[i]],BWTG~SEX+GEST+GEST2+GEST3+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality+MRACER:mortality,na.action="na.exclude")
   model3_test=predict(model3_train,test_list[[i]])
   model3_test_mse[[i]]=mean((test_list[[i]]$BWTG-model3_test)^2)
-  model3_test_mae[[i]]=mean(abs(test_list[[i]]$BWTG-model3_test))
 }
 test_mse=append(test_mse,mean(model3_test_mse))
-test_mae=append(test_mae,mean(model3_test_mae))
 
 #Train and test model4
 model4_test_mse=c()
-model4_test_mae=c()
 for(i in 1:10){
   model4_train=lm(data=train_list[[i]],BWTG~SEX+GEST+GEST2+GEST3+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality+MRACER:mortality,na.action="na.exclude")
   model4_test=predict(model4_train,test_list[[i]])
   model4_test_mse[[i]]=mean((test_list[[i]]$BWTG-model4_test)^2)
-  model4_test_mae[[i]]=mean(abs(test_list[[i]]$BWTG-model4_test))
 }
 test_mse=append(test_mse,mean(model4_test_mse))
-test_mae=append(test_mae,mean(model4_test_mae))
 
 #Train and test robust1
 robust1_test_mse=c()
-robust1_test_mae=c()
 for(i in 1:10){
   robust1_train=lm(data=train_list[[i]],BWTG~SEX+GEST+GEST2+GEST3+PARITY_truncated+PLUR_truncated+smoking_type+MAGE+MRACER+mortality+MRACER:mortality,na.action="na.exclude")
   robust1_test=predict(robust1_train,test_list[[i]])
   robust1_test_mse[[i]]=mean((test_list[[i]]$BWTG-robust1_test)^2)
-  robust1_test_mae[[i]]=mean(abs(test_list[[i]]$BWTG-robust1_test))
 }
 test_mse=append(test_mse,mean(robust1_test_mse))
-test_mae=append(test_mae,mean(robust1_test_mae))
 
 #MSE Results
 results_mse=matrix(test_mse,ncol=5)
