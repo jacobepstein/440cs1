@@ -1,24 +1,34 @@
 ---
 title: "440 Case Study 1"
-author: "Group 8: Jake Epstein, Daniel Spottiswood, Michael Tan, Sahil Patel, Man-Lin Hsiao"
+author: 'Group 8: Jake Epstein, Daniel Spottiswood, Michael Tan, Sahil Patel, Man-Lin
+  Hsiao'
 date: "9/17/2019"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 theme: cerulean
 ---
 <style type="text/css">
+.main-container {
+  max-width: 1800px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 0.5em;
+  line-height: 10px;
+}
 
 body{ /* Normal  */
       font-size: 10px;
   }
 td {  /* Table  */
-  font-size: 8px;
+  font-size: 7px;
 }
 h1.title {
-  font-size: 13px;
+  font-size: 11px;
   color: DarkRed;
 }
 h1 { /* Header 1 */
-  font-size: 13px;
+  font-size: 11px;
   color: DarkBlue;
 
 }
@@ -36,12 +46,36 @@ code.r{ /* Code block */
     font-size: 7px;
 }
 pre { /* Code block - determines code spacing between lines */
-    font-size: 6px;
+    font-size: 7px;
 }
 </style>
 
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+library(knitr)
+hook_output <- knit_hooks$get("output")
+knit_hooks$set(output = function(x, options) {
+  lines <- options$output.lines
+  if (is.null(lines)) {
+    return(hook_output(x, options))  # pass to default hook
+  }
+  x <- unlist(strsplit(x, "\n"))
+  more <- "..."
+  if (length(lines)==1) {        # first n lines
+    if (length(x) > lines) {
+      # truncate the output, but add ....
+      x <- c(head(x, lines), more)
+    }
+  } else {
+    x <- c(more, x[lines], more)
+  }
+  # paste these lines together
+  x <- paste(c(x, ""), collapse = "\n")
+  hook_output(x, options)
+})
+``` 
+
 ## Introduction
-Birth weight is a commonly-used indicator of a newborn infant’s health status. Because this indicator is easily obtained, it is a critical component of population health reporting by the World Health Organization and governments around the globe. The distribution of birth weight has often been described as approximately normal, though the left tail in particular is inflated relative to that from a Gaussian distribution. 
+Birth weight is a commonly-used indicator of a newborn infant’s health status, tracked closely by the World Health Organization and governments.
 
 The goals of this case study are as follows: 
 1) determining which factors are associated with birth weight 
@@ -140,7 +174,7 @@ For data cleaning and processing, we chose to: (1) make smoking a categorical va
 ### Smoking
 Independent of other variables, we see a negative relationship between parity and birth weight past the first child. The frequency of parity decreases in an exponential fashion. A second variable was created that truncates parities of at least five to improve interprability and prevent overfitting.
 
-```{r, echo=FALSE, message=FALSE, fig.width=4.5, fig.height=4}
+```{r, echo=FALSE, message=FALSE, fig.width=7, fig.height=3.5}
 ## SMOKING:
 births = births %>% mutate(
   CIGPN_binary = CIGPN>0,
@@ -244,16 +278,16 @@ grid.arrange(plot1,plot2,plot3,plot4, plot5,layout_matrix = rbind(c(1,1,2), c(3,
 Around 13% of women smoked in the three months leading up to pregnancy and around 10% of women smoked at any point during their pregnancy. Among those who did smoke during pregnancy, the average number of cigarettes smoked during pregnancy was 23. The birthweight of children of mothers who smoked before and during pregnancy was significantly lower than that of the children of nonsmokers, with an average difference of about 200 grams. There is also a significant relationship between birthweight and smoking before pregnancy, even for those who did not smoke during pregnancy.
 
 ### Plurality
-We see a strong non-linear negative relationship between plurality and birth weight. The frequency of pluralities above two is extremely small, and we again see a proportionally small amount of missing data (very few mothers have triplets or more). A second variable was created that truncates pluralities of at least three to improve interpratability and prevent overfitting.  
+We see a strong non-linear negative relationship between plurality and birth weight. The frequency of pluralities above two is extremely small, and we again see a proportionally small amount of missing data. A second variable was created that truncates pluralities of at least three to improve interpratability and prevent overfitting.  
 
 ### Parity
 Independent of other variables, we see a negative relationship between parity and birth weight past the first child. The frequency of parity decreases in an exponential fashion. A second variable was created that truncates parities of at least five to improve interprability and prevent overfitting. The quantity of missing data is relatively small, as there are very few instances of mothers having more than 5 children.
 
 ### Race of Mother
-There are significant differences between the average birth weights of mothers of different races. We see that mothers that self-identified as white have the largest mean baby weight at 3.34 kg, while black mothers have the lowest mean baby weight at only 3.07 kg. 56 percent of mothers identify as white, 24 percent identify as black, 15 percent identify as hispanic, and 4 percent identify as asian.
+There are significant differences between the average birth weights of mothers of different races. We see that mothers that self-identified as white have the largest mean baby weight at 3.34 kg, while black mothers have the lowest mean baby weight at only 3.07 kg. 56 percent of mothers identify as white, 24 percent identify as black, 15 percent identify as hispanic, and 4 percent identify as Asian.
 
 ### EDA on Birth Weight 
-```{r, echo=FALSE, message=FALSE, fig.width=3, fig.height=2}
+```{r, echo=FALSE, message=FALSE, fig.width=9, fig.height=2}
 #BIRTH WEIGHT
 plot6 = ggplot(births, aes(x= BWTG))+
   geom_histogram(binwidth=100, colour="black", 
@@ -271,11 +305,10 @@ plot7 = ggplot(data = births, mapping = aes(x = as.factor(GEST), y = BWTG)) +
 grid.arrange(plot6, plot7,layout_matrix = rbind(c(1,2)))
 ```
 <br>
-Birthweight is close to normally distributed, with a slight left skew, centered around ~3,300g with a standard deviation of 600g. There appear to be no large outliers in terms of birthweight. 430 birth weights are missing. We see that the left tail is much larger than we would expect in a normal distribution. We'll keep this in mind when evaluating the assumptions of linear regression.
+Birthweight is close to normally distributed, with a slight left skew. There appears to be no large outliers in terms of birthweight. 430 birth weights are missing. We see that the left tail is much larger than we would expect in a normal distribution. We'll keep this in mind when evaluating the assumptions of linear regression.
 
 ### EDA on Gestation
-There appears to be a non-linear positive relationship between gestation period and birth weight. The mean gestational period is approximately 38.5 weeks and the period with the highest median weight is 42 weeks. The frequency distribution is left skewed with the majority of babies having a gestational period between 38 and 40 weeks. There is some concern that more extreme gestational periods may lead to higher variance, and it should be noted that there is a chunk of data points with gestational periods of 17 to 21 weeks that have much higher than expected birth weights. There is an extreme outlier with gestational age of 83 weeks. Given that this data point was probably incorrectly recorded (it is biologically nearly impossible for a human to gestate for 83 weeks), we will exclude it from our analysis when building the model.
-
+There appears to be a non-linear positive relationship between gestation period and birth weight. The distribution is left skewed. There is some concern that more extreme gestational periods may lead to higher variance, and it should be noted that there is a chunk of data points with gestational periods of 17 to 21 weeks that have much higher than expected birth weights. There is an extreme outlier with gestational age of 83 weeks. Given that it is biologically impossible for a human to gestate for 83 weeks, we will exclude it from our analysis when building the model.
 
 
 ## Model Selection and Validation
@@ -293,21 +326,22 @@ model1 = lm(data = births_excl, BWTG ~ SEX + GEST + PARITY_truncated + PLUR_trun
 #summary(model1)
 par(mfrow = c(3,2))
 plot(model1)
-plot(births_excl$GEST, model1$residuals, main = "Gestation vs Residuals")
-plot(births_excl$smoking_type, model1$residuals, main = "Smoking vs Residuals")
+#plot(births_excl$GEST, model1$residuals, main = "Gestation vs Residuals")
+#plot(births_excl$smoking_type, model1$residuals, main = "Smoking vs Residuals")
 
 #Check multicollinearity
 library(car)
-vif(model1)
+#vif(model1)
 ```
+
 We noticed that the residuals vs fitted values and residuals vs gestational period plot slope downwards, indicating that there is a departure from linearity. A transformation may be helpful. The model may improve with additional higher-order terms added for gestation. Furthermore, the Q-Q plot indicates a departure from normality, likely as a result of the left skew of birthweight. We will keep this in mind as we make improvements to this initial model.
 
-The residual graph for Smoking has higher residuals for no smoking than for smoking of any kind. This makes sense, as birth weight could biologically get smaller in the presence of smoking, as smoking can be damaging to the fetus and be detrimental to its growth and weight. This would lead to the range of birth weights of smoking mothers getting tighter, leading to smaller absolute value residuals.
+The residual graph for Smoking has higher residuals for no smoking than for smoking of any kind. 
 
 The GVIF outputs also do not indicate that there is multicollinearity.
 
 ### Interaction Effects
-To explore interaction effects, we explored potential interactions that had logical bases in reality -- meaning that there was evidence in our daily experiences and background knowledge to suggest that an interaction may exist. We explored interactions between 1) race and county infant mortality (race may be correlated with socioeconomic status which may be correlated with mortality), 2) race and smoking (race may be correlated with cultural norms which may be correlated with smoking habits) 3) race and parity (race may be correlated with socioeconomic status which may be correlated with number of children), and 4) race and age (may be correlated with cultural norms which may be correlated with age at which one has kids).
+To explore interaction effects, we explored potential interactions that had logical bases in reality -- meaning that there was evidence in our daily experiences and background knowledge to suggest that an interaction may exist. We explored interactions between 1) race and county infant mortality 2) race and smoking 3) race and parity and 4) race and age.
 
 After running a regression exploring all those interactions listed above, we found that race and county infant mortality had significant interaction effects on birth weight.
 
@@ -327,9 +361,9 @@ par(mfrow = c(2,2))
 plot(model4)
 ```
 
-Quartic: The addition of the quartic term further smooths the residual plot, and it appears that additional polynomial degrees would only lead to overfitting and loss of interprability. Despite this, our assumption of normality still does not appear to be totally met, as shown by the Q-Q plot, and the residuals are not quite homoskedastic, as the variance of the residuals increases as the fitted values gets larger. Because of this, we should look into more robust methods. For that we will utilize M-estimation.
+Quartic: The addition of the quartic term further smooths the residual plot, and it appears that additional polynomial degrees would only lead to overfitting and loss of interprability. Despite this, our assumption of normality still does not appear to be totally met, as shown by the Q-Q plot, and the residuals are not quite homoskedastic, as the variance of the residuals increases as the fitted values gets larger. Because of this, we will look into utilizing M-estimation.
 
-
+<br>
 ### Robust on Model 4
 ```{r, fig.width=7, fig.height=5}
 robust1 <- rlm(data = births_excl, BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality, na.action = "na.exclude")
@@ -338,13 +372,15 @@ par(mfrow = c(2,3))
 plot(robust1)
 # plot(robust1$fitted.values, robust1$residuals)
 plot(births_excl$GEST, robust1$residuals, main = "Gestation vs Residuals")
+```
 
+```{r, echo = FALSE}
 #Check weights
 robust1_weights = data.frame(bwt = births_excl$BWTG, gest = births_excl$GEST,
  resid=robust1$resid, weight=robust1$w)
 robust1_weights[order(robust1$w)[c(1:5, (length(robust1$w)-5):length(robust1$w))],]
 ```
-Our robust method downweights the weighting on observations with the largest residuals, as shown above. Looking at the output, it appears we still run into the same challenges as before with normality, even with this more robust approach. We will compare the approaches below by MSE using cross validation and splitting the data into test and training sets, but it is evident that an even more robust approach, such as quantile regression will be useful in exploring these relationships further.
+Our robust method downweights the weighting on observations with the largest residuals, as shown above. Looking at the output, it appears we still run into the same challenges as before with normality, even with this more robust approach. We will compare the approaches below by MSE using cross validation and splitting the data into test and training sets, and then we will use quantile regression to explore these relationships further.
 
 ## Cross Validation of Model
 ```{r}
@@ -421,12 +457,12 @@ results
 ```
 We employed K-fold cross-validation to test the models on their ability to accurately predict. Following the technique, we shuffled the data to randomize the sample, and then partitioned the data into K=10 folds (groups). We used the 10 folds to form 10 pairs of test and training sets; every test set is composed a differnet fold of the 10 total folds, and each training set is the remaining nine folds combined. We used the training sets to produce the estimates from the model, and use the test sets to produce an error score, the MSE. We averaged the 10 MSEs for all for 5 the models we developed and used this output as our metric of comparison.
 
-We prefer using these MSE scores over the in-sample results reported in our initial model estimates. Using cross validation allows us to mitigate the adverse effects of overfitting our model by adding more covariates. As illustrated by the table above, model4 has the lowest MSE out of all models utilised. This implies that model4 yields the least erroneous out of sample (test data) results, and thus indicates the least amount of overfitting. Nonetheless, MSE is decreasing across our models as we increase the number of covariates and the MSE produced by cAZ¸Å[[ross-validation of model4 is not substantially lower than the lower-degree models. Therefore, although our preferred model exhibits the least amount of overfitting across all models we tested, we should explore further functional forms to see if we can noticeably decrease MSE. Notably, the robust model had the second lowest MSE. The robust model reduces the influence of outlying data, therefore we will consider also solving for the MAE across our models as it may increase the interpretability of the robust error. This indicates that by attempting to reduce the influence of outlying data in our model, we may have begun to overfit the data.
+We prefer using these MSE scores over the in-sample results reported in our initial model estimates. Using cross validation allows us to mitigate the adverse effects of overfitting our model by adding more covariates. As illustrated by the table above, model4 has the lowest MSE out of all models utilised. This implies that model4 yields the least erroneous out of sample (test data) results, and thus indicates the least amount of overfitting. Notably, the robust model had the second lowest MSE. The robust model reduces the influence of outlying data, therefore we will consider also solving for the MAE across our models as it may increase the interpretability of the robust error. This indicates that by attempting to reduce the influence of outlying data in our model, we may have begun to overfit the data.
 
 ## Quantile Regression
 * Main focus: how does smoking effect vary based on birthweight?
 
-```{r, echo=FALSE, message=FALSE, output.lines=15}
+```{r, echo=FALSE, message=FALSE, output.lines = 4}
 library(quantreg)
 set.seed(123)
 births_excl_sub <- births_excl[sample(1:nrow(births_excl), nrow(births_excl)/10,
@@ -436,9 +472,6 @@ attach(births_excl_sub)
 qr=rq(BWTG ~ SEX + GEST + GEST2 + GEST3 + GEST4 + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality ,tau=c(.05,.25,0.5, .75,.95))
 sumqr= summary(qr)
 sumqr
-
-
-
 ```
 
 ```{r}
@@ -502,17 +535,13 @@ The quantile regression reveals the following:
 ### Conclusion
 In conclusion, we have answered the 4 main questions of this case study:
 
-1) Determining which factors are associated with birth weight 
-The relevant factors are Sex of Child, Gestational period, parity, plurality, smoking, mother's age, mother's race, and mortality. There was also an interaction effect between mortality and mother's race.
+1) The relevant factors are Sex of Child, Gestational period, parity, plurality, smoking, mother's age, mother's race, and mortality. There was also an interaction effect between mortality and mother's race.
 
-2) Characterizing the relationship between each factor and birth weight
-The effects are explored above. Some specific ones include: 1. As gestational period increases, birthweight increases 2.Twins and triplets (or more) are expected to be much lighter than single-birth babies, by about 310-320 grams 3.Smoking is expected to have a negative effect on babies' birthweights. Mothers who smoked only during pregnancy are expected to have babies which are about 160 grams lighter. Mothers who smoked in the three months leading up to pregnancy as well are expected to have babies which are about 200 grams lighter. Finally, even mothers who only smoked leading up to pregnancy, but not during, also are expected to have lighter babies, but only by about 10 grams.
+2) The effects are explored above. Some specific ones include: 1. As gestational period increases, birthweight increases 2.Twins and triplets (or more) are expected to be much lighter than single-birth babies, by about 310-320 grams 3.Smoking is expected to have a negative effect on babies' birthweights. Smoking of any kind decreases birth weight, and smoking only before pregnancy leads to a 200 gram decrease in birthweight
 
-3) Exploring whether fit of linear regression model is adequate or whether robust regression methods are needed 
-We ended up using robust regression on model4 to attempt to solve the problem of heteroscedasticity, and when that did not work well enough, we used quantile regression. Model4 ended having the lowest MSE, even lower than the robust model, after examination with cross validation. Otherwise, there was a little bit of a departure from normality.
+3) We ended up using robust regression on model4 to attempt to solve the problem of heteroscedasticity, and when that did not work well enough, we used quantile regression. Model4 ended having the lowest MSE, even lower than the robust model, after examination with cross validation. Otherwise, there was a little bit of a departure from normality.
 
-4) Estimating the impact of eliminating maternal smoking on birth weight
-Smoking is expected to have a negative effect on babies' birthweights. Mothers who smoked only during pregnancy are expected to have babies which are about 160 grams lighter. Mothers who smoked in the three months leading up to pregnancy as well are expected to have babies which are about 200 grams lighter. Finally, even mothers who only smoked leading up to pregnancy, but not during, also are expected to have lighter babies, but only by about 10 grams.
+4) Smoking is expected to have a negative effect on babies' birthweights. Mothers who smoked only during pregnancy are expected to have babies which are about 160 grams lighter. Mothers who smoked in the three months leading up to pregnancy as well are expected to have babies which are about 200 grams lighter. Finally, even mothers who only smoked leading up to pregnancy, but not during, also are expected to have lighter babies, but only by about 10 grams.
 
 
 
