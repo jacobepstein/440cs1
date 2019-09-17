@@ -315,7 +315,7 @@ births_excl = births_excl %>%
 #logging BWTG is really bad for the QQ plot
 model1 = lm(data = births_excl, BWTG ~ SEX + GEST + PARITY_truncated + PLUR_truncated + smoking_type + MAGE + MRACER + mortality + MRACER:mortality + MRACER:smoking_type, na.action = "na.exclude")
 #summary(model1)
-par(mfrow = c(3,2))
+par(mfrow = c(2,2))
 plot(model1)
 #plot(births_excl$GEST, model1$residuals, main = "Gestation vs Residuals")
 #plot(births_excl$smoking_type, model1$residuals, main = "Smoking vs Residuals")
